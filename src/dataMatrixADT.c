@@ -40,10 +40,30 @@ Matrix create_from_file(char*filename){
 	for (int i=0; i<m->n_features; i++) {
 		printf("%s\n", m->names[i]);
 	}
-	//______________________________________________________________________________
-	//next part:  read in actual data 
-	//...
 	
+	//next part:  read in actual data-----------------------------------------------
+	m->labels = malloc(sizeof(int) * m->n_observations);
+	if (!(m->labels)) {printf("fail."); exit(1);}
+	m->data = malloc(sizeof(double*) * m->n_observations);
+	if (!(m->data)) {printf("fail."); exit(1);}
+	
+	for (int i=0; i<m->n_observations; i++){
+		fscanf(fp, " %d", m->labels+i);
+		m->data[i] = malloc(sizeof(double) * m->n_observations);
+		if (!(m->data)) {printf("fail."); exit(1);}
+
+		for (int j=0; j<m->n_features-1; j++){
+			double d;
+			fscanf(fp, " %lf", &m->data[i][j]);
+			//printf(" %f\n", m->data[i][j]);
+		}
+	}
+	
+	//test
+	for (int i=0; i<m->n_observations; i++) printf("%d ", m->labels[i]);
+	for (int i=0; i<m->n_observations; i++) printf("\nfirst %f last %f", m->data[i][0], m->data[i][m->n_features-2]);
+	printf("\n");
+	//
 	return m;
 }
 
