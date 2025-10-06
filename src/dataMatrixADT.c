@@ -9,10 +9,11 @@
 void read_word(FILE*fp, char*str);
 
 struct matrix_type {
-  int n_observations;
-  int n_features;
-  char**names;
-  double**data;
+  int n_observations, n_features; //dimensions of the matrix, first line of input file.  
+				  //Not sure yet if n_features will ultmately include the labels, but for now it does.  
+  char**names; //the name of each feature (column).  This is the second line of the input file
+  int*labels; //the labels/categories of each observation.  this is the first column of the input file
+  double**data; //the rest of the data matrix (not including labels or names)
 };
 
 //create a matrix from data file.  I'm pretty sure we won't have to create a matrix otherwise.  
@@ -32,9 +33,10 @@ Matrix create_from_file(char*filename){
 
 	for (int i=0; i<m->n_features; i++) {
 		m->names[i]=(char*)malloc(sizeof(char)*(MAX_NAME_LENGTH+1));
+		if (!(m->names[i])) {printf("fail."); exit(1);}
 		read_word(fp, m->names[i]);	
 	}
-	//verify that names were read correctly
+	//verify that names were read correctly - remove this
 	for (int i=0; i<m->n_features; i++) {
 		printf("%s\n", m->names[i]);
 	}
@@ -45,12 +47,12 @@ Matrix create_from_file(char*filename){
 	return m;
 }
 
-// read in a word from stdin
+// read in a word from file
 void read_word(FILE*fp, char*str){
 	char c=' '; int i=0;
-	while (c==' ' || c=='\n') fscanf(fp, "%c", &c);
-	while (c!=' ' && c!='\n' && c!=EOF && i<30){
-		str[i]=(char)c;
+	while (c==' ' || c=='\n') fscanf(fp, "%c", &c);//skip leading whitespace
+	while (c!=' ' && c!='\n' && i<30){//read until a space or newline is hit.  
+		str[i]=c;
 		i++;
 		fscanf(fp, "%c", &c);
 	}
@@ -58,3 +60,4 @@ void read_word(FILE*fp, char*str){
 	
 }
 
+//other (getter) functions to be implemented here are in dataMatrixADT.h
