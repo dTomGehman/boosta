@@ -60,4 +60,26 @@ void read_word(FILE*fp, char*str){
 	
 }
 
+int get_num_obs(Matrix m) {
+	return m->n_observations;
+
+}
+
+int get_num_feats(Matrix m) {
+        return m->n_features;
+
+}
+
+char* get_name(Matrix m, int feature){
+    if (feature < -1 || feature > m->n_features){
+		printf("Invalid feature number\n");
+		exit(1);
+    }
+    if (feature==-1){
+	return m->names[0];
+    }
+    return m->names[feature];
+}
+
 //other (getter) functions to be implemented here are in dataMatrixADT.h
+
