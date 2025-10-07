@@ -13,5 +13,8 @@ int get_label(Matrix m, int observation); //get the category of an observation (
 double get_data(Matrix m, int observation, int feature); //get the data point at row, col
 void destroy(Matrix m); //might not be necessary, so we can hold off on this for now. 
 
+long get_tree_pos(Matrix m, int observation); //get the treepos of an observation
+void set_tree_pos(Matrix m, int observation, long treepos); //set the treepos of an observation
+int is_same_node(int depth, long treepos1, long treepos2); //compare two treepos to a certain depth
 //we'll see what other functionality we need to add later.  
 #endif

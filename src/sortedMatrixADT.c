@@ -12,12 +12,13 @@ typedef struct {        //struct to hold a point in the sorted array.  Might mov
 	
 	//the above two fields are essential.  Anything below is to hopefully save time as we build the tree to avoid searches and lookups
 	
-	int label;      //(might not be necessary) equivalent to the observation's label.  
+	//int label;      //(might not be necessary) equivalent to the observation's label.  
 		        //This might save a small amount of time to copy it here instead of constantly referring back to the original matrix.  
-	long tree_pos;  //binary representing the datum's position in the tree (instance set) as the tree is being created
+	//long tree_pos;  //binary representing the datum's position in the tree (instance set) as the tree is being created
 } point;
 
 struct sorted_type {
+	Matrix m; //parent matrix
 	int n_observations, n_features;
 	point**matrix;  //2d array of points.  This is equivalent to transposing the unsorted matrix and sorting each row (feature)
 };

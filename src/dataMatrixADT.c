@@ -14,6 +14,7 @@ struct matrix_type {
   char**names; //the name of each feature (column).  This is the second line of the input file
   int*labels; //the labels/categories of each observation.  this is the first column of the input file
   double**data; //the rest of the data matrix (not including labels or names)
+  long*tree_positions; //binary representing the nodes (location) of an observation in a tree
 };
 
 //create a matrix from data file.  I'm pretty sure we won't have to create a matrix otherwise.  
@@ -64,6 +65,12 @@ Matrix create_from_file(char*filename){
 	for (int i=0; i<m->n_observations; i++) printf("\nfirst %f last %f", m->data[i][0], m->data[i][m->n_features-2]);
 	printf("\n");
 	//
+	
+	m->tree_positions = malloc(sizeof(long) * m->n_observations);
+	if (!(m->tree_positions)) {printf("fail."); exit(1);}
+	
+	for (int i=0; i<m->n_observations; i++) set_tree_pos(m, i, 0l);
+	for (int i=0; i<m->n_observations; i++) printf("%ld ", get_tree_pos(m, i));
 	return m;
 }
 
@@ -101,5 +108,12 @@ char* get_name(Matrix m, int feature){
     return m->names[feature];
 }
 
+void set_tree_pos(Matrix m, int observation, long treepos){
+	m->tree_positions[observation] = treepos;
+}
+
+long get_tree_pos(Matrix m, int observation){
+	return m->tree_positions[observation];
+}
 //other (getter) functions to be implemented here are in dataMatrixADT.h
 
