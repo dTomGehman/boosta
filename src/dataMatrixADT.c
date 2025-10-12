@@ -68,9 +68,9 @@ Matrix create_from_file(char*filename){
 	
 	m->tree_positions = malloc(sizeof(long) * m->n_observations);
 	if (!(m->tree_positions)) {printf("fail."); exit(1);}
-	
 	for (int i=0; i<m->n_observations; i++) set_tree_pos(m, i, 0l);
-	for (int i=0; i<m->n_observations; i++) printf("%ld ", get_tree_pos(m, i));
+
+	//for (int i=0; i<m->n_observations; i++) printf("%ld ", get_tree_pos(m, i));
 	return m;
 }
 
