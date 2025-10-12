@@ -108,6 +108,16 @@ char* get_name(Matrix m, int feature){
     return m->names[feature+1];
 }
 
+int get_label(Matrix m, int observation) {
+	return m->labels[observation];
+
+}
+
+double get_data(Matrix m, int observation, int feature) {
+	return m->data[observation][feature];
+
+}
+
 void set_tree_pos(Matrix m, int observation, long treepos){
 	m->tree_positions[observation] = treepos;
 }
