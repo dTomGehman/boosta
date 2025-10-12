@@ -18,7 +18,7 @@ bool is_empty(PQ s);             //check to see if the queue is empty
 bool is_full(PQ s);              //check to see if the queue is full
 void insert(PQ s, Item i);       //enqueue an item onto the queue (if possible)
 Item extract(PQ s);              //dequeue an item off of the queue (if possible)
-void print_PQ(PQ s);
+//void print_PQ(PQ s);
 
 
 #endif

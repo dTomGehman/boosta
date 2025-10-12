@@ -30,7 +30,7 @@ struct PQ_type{
 //helper methods for insert, print_PQ, and extract
 //I used helpers to apply recursion.  e.g., a call to print_PQ accesses the top node in the PQ and passses it to n_print_PQ
 void n_insert(struct node *newn_node, struct node *existing, unsigned long n); //u long n : change from original PQADT
-void n_print_PQ(struct node *n);
+//void n_print_PQ(struct node *n);
 void n_chop(struct node **p);
 //all other functions are in the PQADT.h
 
