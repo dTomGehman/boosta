@@ -4,6 +4,8 @@
 #include "sortedMatrixADT.h"
 #include "pointPriorityADT.h"
 
+
+//I moved the following commented-out struct to sortedMatrixADT.h.  
 /*
 typedef struct {        //struct to hold a point in the sorted array.  Might move this to the header file depending on how we use it.  
 		        //This point contains its (double) value as well as other fields to refer back to which observation its from, 
@@ -25,6 +27,8 @@ struct sorted_type{
 };
 
 
+void sortnshove(point*array, Matrix m, int feature);
+
 SortedMatrix create_from_matrix(Matrix m){
 	SortedMatrix sm = malloc(sizeof(struct sorted_type));
 	if (!sm) {printf("fail. "); exit(1);}
@@ -34,11 +38,44 @@ SortedMatrix create_from_matrix(Matrix m){
 	sm->matrix = malloc(sizeof(point*) * get_num_feats(m));
 	if (!sm->matrix) {printf("fail. "); exit(1);}
 
-	for (int i=0; i<get_num_feats(m); i++){
+	for (int i=0; i<get_num_feats(m); i++){ //this for loop could be threaded I think
 		sm->matrix[i] = malloc(sizeof(point) * get_num_obs(m));
 		if (!sm->matrix[i]) {printf("fail. "); exit(1);}
-	}
 
+		sortnshove(sm->matrix[i], m, i);
+	}
+	
+	//quick test, to be removed later and placed in the client
+	//holy cow it works first try let's go
+	for (int i=0; i<get_num_feats(m); i++){
+		printf("Feature %d: \n", i);
+		for (int j=0; j<get_num_obs(m); j++){
+			printf(" Obs %d Data %lf\n", sm->matrix[i][j].obs_number, sm->matrix[i][j].datum);
+		}
+	}
+	
 
 	return sm;
 }
+
+//sort and shove it i guess
+void sortnshove(point*array, Matrix m, int feature){ //this might be inefficient due to copying, so maybe I'll improve it, or maybe I won't.  
+	PQ q = create();
+	for (int i=0; i<get_num_obs(m); i++){
+		point*p = malloc(sizeof(point));
+		if (!p) {printf("fail. "); exit(1);}
+		p->obs_number = i;
+		p->datum = get_data(m, i, feature);
+		insert(q, p);
+	}
+	for (int i=0; !is_empty(q); i++){
+		point*p = extract(q);
+		array[i].datum = p->datum;
+		array[i].obs_number = p->obs_number;
+		free(p); //most of the dynamically-allocated memory is supposed to persist until the end of the program
+			 //this one does not.  I'll have to check through the rest of the code at some point for other cases like this.  
+	}
+	destroy_q(q);
+		
+}
+
