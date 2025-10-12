@@ -23,3 +23,8 @@ struct sorted_type {
 	point**matrix;  //2d array of points.  This is equivalent to transposing the unsorted matrix and sorting each row (feature)
 };
 
+
+SortedMatrix create_from_matrix(Matrix m){
+	SortedMatrix *sm = malloc(sizeof(sorted_type));
+	sm->m = m;
+	sm->n_observations = m->n_observations;

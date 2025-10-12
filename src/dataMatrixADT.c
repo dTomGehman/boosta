@@ -10,7 +10,7 @@ void read_word(FILE*fp, char*str);
 
 struct matrix_type {
   int n_observations, n_features; //dimensions of the matrix, first line of input file.  
-				  //Not sure yet if n_features will ultmately include the labels, but for now it does.  
+  				  //n_features now does not include the label.  
   char**names; //the name of each feature (column).  This is the second line of the input file
   int*labels; //the labels/categories of each observation.  this is the first column of the input file
   double**data; //the rest of the data matrix (not including labels or names)
@@ -29,18 +29,18 @@ Matrix create_from_file(char*filename){
 	//printf("obs %d, feats %d", m->n_observations, m->n_features);
 	
 	// read in feature names -------------------------------------------------------
-	m->names = (char**)malloc(sizeof(char*) * m->n_features);
+	m->names = (char**)malloc(sizeof(char*) * (m->n_features+1));
 	if (!(m->names)) {printf("fail."); exit(1);}
 
-	for (int i=0; i<m->n_features; i++) {
+	for (int i=0; i<m->n_features+1; i++) {
 		m->names[i]=(char*)malloc(sizeof(char)*(MAX_NAME_LENGTH+1));
 		if (!(m->names[i])) {printf("fail."); exit(1);}
 		read_word(fp, m->names[i]);	
 	}
 	//verify that names were read correctly - remove this
-	for (int i=0; i<m->n_features; i++) {
-		printf("%s\n", m->names[i]);
-	}
+	//for (int i=0; i<m->n_features+1; i++) {
+	//	printf("%s\n", m->names[i]);
+	//}
 	
 	//next part:  read in actual data-----------------------------------------------
 	m->labels = malloc(sizeof(int) * m->n_observations);
@@ -50,11 +50,11 @@ Matrix create_from_file(char*filename){
 	
 	for (int i=0; i<m->n_observations; i++){
 		fscanf(fp, " %d", m->labels+i);
-		m->data[i] = malloc(sizeof(double) * m->n_observations);
+		m->data[i] = malloc(sizeof(double) * (m->n_features));
 		if (!(m->data)) {printf("fail."); exit(1);}
 
-		for (int j=0; j<m->n_features-1; j++){
-			double d;
+		double d;
+		for (int j=0; j<m->n_features; j++){
 			fscanf(fp, " %lf", &m->data[i][j]);
 			//printf(" %f\n", m->data[i][j]);
 		}
@@ -62,7 +62,7 @@ Matrix create_from_file(char*filename){
 	
 	//test
 	for (int i=0; i<m->n_observations; i++) printf("%d ", m->labels[i]);
-	for (int i=0; i<m->n_observations; i++) printf("\nfirst %f last %f", m->data[i][0], m->data[i][m->n_features-2]);
+	for (int i=0; i<m->n_observations; i++) printf("\nfirst %f last %f", m->data[i][0], m->data[i][m->n_features-1]);
 	printf("\n");
 	//
 	
@@ -98,14 +98,14 @@ int get_num_feats(Matrix m) {
 }
 
 char* get_name(Matrix m, int feature){
-    if (feature < -1 || feature > m->n_features){
+    if (feature < -1 || feature >= m->n_features){
 		printf("Invalid feature number\n");
 		exit(1);
     }
-    if (feature==-1){
-	return m->names[0];
-    }
-    return m->names[feature];
+    //if (feature==-1){
+    //   return m->names[0];
+    //}
+    return m->names[feature+1];
 }
 
 void set_tree_pos(Matrix m, int observation, long treepos){
