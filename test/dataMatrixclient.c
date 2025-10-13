@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "../src/dataMatrixADT.h"
+#include "../src/dataMatrix/dataMatrixADT.h"
 
 int main(int argc, char**argv){
 	Matrix a;

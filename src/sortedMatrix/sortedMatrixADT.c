@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "dataMatrixADT.h"
+#include "../dataMatrix/dataMatrixADT.h"
 #include "sortedMatrixADT.h"
 #include "pointPriorityADT.h"
 
