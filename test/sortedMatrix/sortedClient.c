@@ -1,5 +1,5 @@
-#include "../src/dataMatrix/dataMatrixADT.h"
-#include "../src/sortedMatrix/sortedMatrixADT.h"
+#include "../../src/dataMatrix/dataMatrixADT.h"
+#include "../../src/sortedMatrix/sortedMatrixADT.h"
 #include <stdio.h>
 
 int main(int argc, char**argv){
