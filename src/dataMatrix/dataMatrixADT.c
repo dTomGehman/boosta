@@ -61,9 +61,9 @@ Matrix create_from_file(char*filename){
 	}
 	
 	//test
-	for (int i=0; i<m->n_observations; i++) printf("%d ", m->labels[i]);
-	for (int i=0; i<m->n_observations; i++) printf("\nfirst %f last %f", m->data[i][0], m->data[i][m->n_features-1]);
-	printf("\n");
+	//for (int i=0; i<m->n_observations; i++) printf("%d ", m->labels[i]);
+	//for (int i=0; i<m->n_observations; i++) printf("\nfirst %f last %f", m->data[i][0], m->data[i][m->n_features-1]);
+	//printf("\n");
 	//
 	
 	m->tree_positions = malloc(sizeof(long) * m->n_observations);

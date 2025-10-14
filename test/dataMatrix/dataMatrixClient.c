@@ -3,8 +3,7 @@
 
 int main(int argc, char**argv){
 	Matrix a;
-	printf("Following tests are printed in dataMatrixADT.c and should eventually be removed:  \n\n");
-
+	//printf("Following tests are printed in dataMatrixADT.c and should eventually be removed:  \n\n");
 	if (argc==2){
 		a = create_from_file(argv[1]);
 	} else {printf("no file??\n"); return 1;}
