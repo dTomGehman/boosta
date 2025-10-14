@@ -1,7 +1,7 @@
 #ifndef SORTEDMATRIX
 #define SORTEDMATRIX
 
-#include "..\dataMatrix\dataMatrixADT.h"
+#include "../dataMatrix/dataMatrixADT.h"
 
 typedef struct sorted_type *SortedMatrix;
 
