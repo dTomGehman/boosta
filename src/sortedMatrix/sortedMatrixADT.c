@@ -35,6 +35,11 @@ SortedMatrix create_from_matrix(Matrix m){
 	struct timespec startTime, endTime;
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	SortedMatrix sm = malloc(sizeof(struct sorted_type));
+	if (!sm) {printf("fail. "); exit(1);}
+	sm->m = m;
+	
+	sm->matrix = malloc(sizeof(point*) * get_num_feats(m));
+	if (!sm->matrix) {printf("fail. "); exit(1);}
 
 	typedef struct __arg {       //arg for threads
 		int start;
@@ -55,12 +60,6 @@ SortedMatrix create_from_matrix(Matrix m){
         }
 
 
-	if (!sm) {printf("fail. "); exit(1);}
-
-	sm->m = m;
-	
-	sm->matrix = malloc(sizeof(point*) * get_num_feats(m));
-	if (!sm->matrix) {printf("fail. "); exit(1);}
 
 	for (int i=0; i<get_num_feats(m); i++){
 		sm->matrix[i] = malloc(sizeof(point)*get_num_obs(m));
@@ -90,14 +89,17 @@ SortedMatrix create_from_matrix(Matrix m){
 	}
 //	clock_t endTime = clock();
 	clock_gettime(CLOCK_MONOTONIC, &endTime);
+
 	//quick test, to be removed later and placed in the client
 	//holy cow it works first try let's go
+	/*
 	for (int i=0; i<get_num_feats(m); i++){
 		printf("Feature %d: \n", i);
 		for (int j=0; j<get_num_obs(m); j++){
 			printf(" Obs %d Data %lf\n", sm->matrix[i][j].obs_number, sm->matrix[i][j].datum);
 		}
-	}
+	}*/
+
 //	printf("Time to create sorted Matrix: %f\n", (double)(endTime-startTime)/CLOCKS_PER_SEC);  //To compare threaded time with regular time
 	double totalTime = (endTime.tv_sec-startTime.tv_sec)+((endTime.tv_nsec-startTime.tv_nsec)/1000000000.0);
 	printf("Time to create sorted Matrix %f\n", totalTime);
@@ -126,3 +128,6 @@ void sortnshove(point*array, Matrix m, int feature){ //this might be inefficient
 		
 }
 
+point*get_sorted_col(SortedMatrix s, int feature){ //maybe add if statement to ensure that feature argument is valid
+	return s->matrix[feature];
+}
