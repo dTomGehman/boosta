@@ -31,7 +31,9 @@ struct sorted_type{
 void sortnshove(point*array, Matrix m, int feature);
 
 SortedMatrix create_from_matrix(Matrix m){
-	clock_t startTime = clock();
+//	clock_t startTime = clock();
+	struct timespec startTime, endTime;
+	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	SortedMatrix sm = malloc(sizeof(struct sorted_type));
 
 	typedef struct __arg {       //arg for threads
@@ -46,8 +48,8 @@ SortedMatrix create_from_matrix(Matrix m){
 		int startCol = arr.start;
 		int endCol = arr.end;
 		for (int i=startCol; i<endCol; i++){
-                	sm->matrix[i] = malloc(sizeof(point) * get_num_obs(m));
-                	if (!sm->matrix[i]) {printf("fail. "); exit(1);}
+                	//sm->matrix[i] = malloc(sizeof(point) * get_num_obs(m));
+                	//if (!sm->matrix[i]) {printf("fail. "); exit(1);}
                 	sortnshove(sm->matrix[i], m, i);
 		}
         }
@@ -59,6 +61,11 @@ SortedMatrix create_from_matrix(Matrix m){
 	
 	sm->matrix = malloc(sizeof(point*) * get_num_feats(m));
 	if (!sm->matrix) {printf("fail. "); exit(1);}
+
+	for (int i=0; i<get_num_feats(m); i++){
+		sm->matrix[i] = malloc(sizeof(point)*get_num_obs(m));
+		if (!sm->matrix[i]) {printf("fail. "); exit(1);}
+	}
 
 	if (get_num_feats(m) >= 3) {                   //I only made three threads for now; I'll probably add more later
 		pthread_t p1, p2, p3;
@@ -76,12 +83,13 @@ SortedMatrix create_from_matrix(Matrix m){
 		pthread_join(p3, NULL);
 	} else {                                        //Doesn't use threads if less than three features
 		for (int i=0; i<get_num_feats(m); i++){       //this for loop could be threaded I think
-			sm->matrix[i] = malloc(sizeof(point) * get_num_obs(m));
-			if (!sm->matrix[i]) {printf("fail. "); exit(1);}
+			//sm->matrix[i] = malloc(sizeof(point) * get_num_obs(m));
+			//if (!sm->matrix[i]) {printf("fail. "); exit(1);}
 			sortnshove(sm->matrix[i], m, i);
 		}
 	}
-	clock_t endTime = clock();
+//	clock_t endTime = clock();
+	clock_gettime(CLOCK_MONOTONIC, &endTime);
 	//quick test, to be removed later and placed in the client
 	//holy cow it works first try let's go
 	for (int i=0; i<get_num_feats(m); i++){
@@ -90,7 +98,9 @@ SortedMatrix create_from_matrix(Matrix m){
 			printf(" Obs %d Data %lf\n", sm->matrix[i][j].obs_number, sm->matrix[i][j].datum);
 		}
 	}
-	printf("Time to create sorted Matrix: %f\n", (double)(endTime-startTime)/CLOCKS_PER_SEC);  //To compare threaded time with regular time
+//	printf("Time to create sorted Matrix: %f\n", (double)(endTime-startTime)/CLOCKS_PER_SEC);  //To compare threaded time with regular time
+	double totalTime = (endTime.tv_sec-startTime.tv_sec)+((endTime.tv_nsec-startTime.tv_nsec)/1000000000.0);
+	printf("Time to create sorted Matrix %f\n", totalTime);
 
 	return sm;
 }
