@@ -23,5 +23,10 @@ int main(int argc, char**argv){
 		}
 	}
 
+	split_location sl = find_split(a, s, 0l, 0); //last two arguments have to do with the node to split; 
+						     //that is not implemented yet, but we are just splitting at the topmost node rn
+	printf("\nSplit found at\nFeature:  %d\n", sl.feature);
+	printf("bound: %lf\n", sl.bound);
+
 	return 0;
 }
