@@ -118,12 +118,60 @@ double get_data(Matrix m, int observation, int feature) {
 
 }
 
-void set_tree_pos(Matrix m, int observation, long treepos){
+//This sets the treepos of an observation
+//This probably won't ultimately be public if only update_tree_pos uses it, but I'll leave it in the header for now.  
+void set_tree_pos(Matrix m, int observation, pos_t treepos){
 	m->tree_positions[observation] = treepos;
 }
 
-long get_tree_pos(Matrix m, int observation){
+//Preconditions:  
+//rightleft is either 0 or 1.  0 represents adding this observation to the left child of its current node, and 1 represents adding this observation to the right child of its current node
+//depth is the depth of the new node, or one plus the current depth
+//depth is no more than MAXDEPTH (63).  I don't think this will be a problem as xgb requires weak learners, but it is something to keep in mind.  
+//
+//for example, if we have just calculated the first split and intend to place a particular observation obs
+//in the right node below the root, we call 
+//	update_tree_pos(m, obs, 1, 1);
+//if we're in the 5th layer of nodes (not including root) and want to place an observation to the left, call
+//	update_tree_pos(m, obs, 0, 6);
+//
+//Notice that calling the function with rightleft=0 doesn't actually do anything
+//that implies a few things
+// - an observation that is repeatedly placed to the left will have a pos of 0.  
+// - comparing the position of two observations to see if they are in the same node requires us to know the depth of the node, which I think should be the responsibility of the tree to store and not the matrix
+// - placing a node to the right takes slightly more time than placing one to the left; we could use this for a tiny optimization later
+void update_tree_pos(Matrix m, int observation, int rightleft, int depth){
+	if (rightleft)
+		set_tree_pos(m, observation, 
+			((get_tree_pos(m, observation)>>(MAXDEPTH-depth))|rightleft)<<(MAXDEPTH-depth)
+			);
+}
+
+pos_t get_tree_pos(Matrix m, int observation){
 	return m->tree_positions[observation];
 }
-//other (getter) functions to be implemented here are in dataMatrixADT.h
 
+//compare two positions at a depth
+//at depth zero, this will always return true (1): every observation is in the root node
+//the first few (depth number of) bits are compared
+//if we pass depth as MAXDEPTH, this function always returns if the two positions are in the same leaf node, as all bits are compared.  
+//we can also compare at any other depth
+//
+//example:  
+//observation 1 is placed left, right, right
+//	its treepos is 011, or 01100000... truncated at a depth of 3
+//observation 2 is placed left, right, left
+//	its treepos is 010, or 01000000... truncated at a depth of 3
+//let a = get_tree_pos(m, 1) and b = get_tree_pos(m, 2)
+//a call is_same_node(MAXDEPTH, a, b) returns 0, as they are not in the same leaf node
+//is_same_nodei(3, a, b) also returns 0, as they are not in the same 3rd layer node (which happens to be the leaf) 
+//is_same_node(2, a, b) returns 1, as they are in the same 2nd layer node.
+//This implies that is_same_node(n, a, b) will return 1 for any n<=2;
+//calling is_same_node(0, a, b) returns 1, as they are both in the root node.  No bits are actually compared
+//
+//Note:  I originally had MAXDEPTH set to 64.  Even though pos_t is defined as an unsigned long, this implementation of c used an arithmetic shift, causing error.  Easiest thing to do was set it to 63, so the first bit is always 0.  whatever.  
+int is_same_node(int depth, pos_t treepos1, pos_t treepos2){
+	//if (!depth) return 1;
+	//return ( (treepos1>>(0)) == (treepos2>>(0)) ); 
+	return ( (treepos1>>(MAXDEPTH-depth)) == (treepos2>>(MAXDEPTH-depth)) ); 
+}

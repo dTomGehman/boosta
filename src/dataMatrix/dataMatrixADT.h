@@ -2,6 +2,7 @@
 #define DATAMATRIX
 
 #define MAX_NAME_LENGTH 30  //max number of characters to have in a feature name (for now)
+#define MAXDEPTH 63
 
 typedef struct matrix_type *Matrix;
 
@@ -13,8 +14,10 @@ int get_label(Matrix m, int observation); //get the category of an observation (
 double get_data(Matrix m, int observation, int feature); //get the data point at row, col
 void destroy(Matrix m); //might not be necessary, so we can hold off on this for now. 
 
-long get_tree_pos(Matrix m, int observation); //get the treepos of an observation
-void set_tree_pos(Matrix m, int observation, long treepos); //set the treepos of an observation
-int is_same_node(int depth, long treepos1, long treepos2); //compare two treepos to a certain depth
+typedef unsigned long pos_t;
+pos_t get_tree_pos(Matrix m, int observation); //get the treepos of an observation
+void set_tree_pos(Matrix m, int observation, pos_t treepos); //set the treepos of an observation
+void update_tree_pos(Matrix m, int observation, int rightleft, int depth); //update the treepos of a node at a new depth.  see comments in dataMatrixADT.c
+int is_same_node(int depth, pos_t treepos1, pos_t treepos2); //compare two treepos to a certain depth.  see comments in dataMatrixADT.c
 //we'll see what other functionality we need to add later.  
 #endif
