@@ -28,5 +28,46 @@ int main(int argc, char**argv){
 	printf("\nSplit found at\nFeature:  %d\n", sl.feature);
 	printf("bound: %lf\n", sl.bound);
 
+	update_all_tree_pos(a, sl, 0l, 0);
+
+	printf("Observations placed in right node:  ");
+	for (int i=0; i<get_num_obs(a); i++) if (get_tree_pos(a, i)==(1l<<(MAXDEPTH-1))) printf("%d ", i);
+	printf("\nObservations placed in left node:  ");
+	for (int i=0; i<get_num_obs(a); i++) if (get_tree_pos(a, i)==(0l)) printf("%d ", i);
+	printf("\n\n");
+
+	printf("Let's split the right side again.  \n");
+	sl=find_split(a, s, (1l<<(MAXDEPTH-1)), 1); 
+	
+	printf("\nSplit found at\nFeature:  %d\n", sl.feature);
+	printf("bound: %lf\n", sl.bound);
+
+	update_all_tree_pos(a, sl, (1l<<(MAXDEPTH-1)), 1);
+	//here I'm using a lot of terms like 0b11l<<(MAXDEPTH-2).  This is good for testing, but I'd like to make a cleaner way 
+	//to do it while building the tree itself.  
+	printf("Observations placed in right->right node:  ");
+	for (int i=0; i<get_num_obs(a); i++) if (get_tree_pos(a, i)==(0b11l<<(MAXDEPTH-2))) printf("%d ", i);
+	printf("\nObservations placed in right->left node:  ");
+	for (int i=0; i<get_num_obs(a); i++) if (get_tree_pos(a, i)==(0b10l<<(MAXDEPTH-2))) printf("%d ", i);
+	printf("\n\n");
+
+
+	printf("Now let's split the left side from before as well.  \n");
+	sl=find_split(a, s, (0), 1); 
+	
+	printf("\nSplit found at\nFeature:  %d\n", sl.feature);
+	printf("bound: %lf\n", sl.bound);
+
+	update_all_tree_pos(a, sl, 0, 1);
+
+	printf("Observations placed in right->right node:  ");
+	for (int i=0; i<get_num_obs(a); i++) if (get_tree_pos(a, i)==(0b01l<<(MAXDEPTH-2))) printf("%d ", i);
+	printf("\nObservations placed in right->left node:  ");
+	for (int i=0; i<get_num_obs(a); i++) if (get_tree_pos(a, i)==(0b00l<<(MAXDEPTH-2))) printf("%d ", i);
+	printf("\n\n");
+
+	//notice that if there is no gini gain (such as when all items in a node are already the same class), 
+	//no split is found, and all of the items are placed in the left node.  However, placing something in the
+	//left node doesn't really do anything.  So there
 	return 0;
 }
