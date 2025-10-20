@@ -1,6 +1,32 @@
 #include "simpleTreeADT.h"
 #include <stdio.h>
 
+
+struct node{
+	int depth; //the depth of this node.  root is 0
+	pos_t id; //the position of this node.  root is 0l
+	split_location sl; //the split location, containing the feature and bound.
+			   //root's sl is the value returned by find_split(m, s, 0, 0); 
+			   //to generalize, sl is found by find_split(m, s, id, depth);
+	struct node*right; //the right child.  
+				 //observations "contained" in this node whose feature sl.feature is greater than sl.bound are placed to the right.  
+				 //the depth of the right node is this node's depth+1
+				 //the id of the right node is this node's id with a 1 appended
+	struct node*left; //the left child
+				//observations "contained" in this node whose feature sl.feature is leq than sl.bound are placed to the left
+				//the depth of the left node is this node's depth+1 (same as right)
+				//the id of the left node is this node's id with a 0 appended (so it actually doesn't change
+	
+	//the observations "in" this node are not tracked here but marked in the dataMatrix by update_all_tree_pos.  
+	//an observation is known to be in this node if is_same_node returns true with the observation's id and this node's id at this node's depth
+};
+
+struct tree_type {
+	struct node *root;
+	//not sure if we need anything else in here or not
+};
+
+
 double gini(int numclass, int numtotal){ //gini calculation
 	return 1 - (
 		((double)numclass / numtotal) * ((double)numclass / numtotal) 

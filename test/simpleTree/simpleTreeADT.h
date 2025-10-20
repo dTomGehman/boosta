@@ -4,6 +4,8 @@
 #include "../../src/dataMatrix/dataMatrixADT.h"
 #include "../../src/sortedMatrix/sortedMatrixADT.h"
 
+typedef struct tree_type *Tree;
+
 typedef struct {
 	int feature; //feature to split on
 	double bound; //value of split boundary:  all observations whose feature is greater than the boundary go to the right node (for example); the rest go to the left.  
