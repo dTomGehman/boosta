@@ -16,7 +16,9 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth){
 				 //this value could be parameterized to adjust for overfitting
 	for (int i=0; i<get_num_feats(m); i++){ //for each feature
 		point*parr=get_sorted_col(s, i);//return the already sorted feature column to traverse
-		for (int j=1; j<get_num_obs(m); j++){ //for each two adjacent observations in feature column (obs-1)
+		int last=0, this=0; //last keeps track of each previous value of j (observation) that is also contained in the same node.  It is used in the sl.bound calculation
+		for (int j=1; j<get_num_obs(m); j++) if (get_tree_pos(m, parr[j].obs_number)==node) { //for each two adjacent observations in feature column (obs-1)
+			last=this; this=j;
 			int left=0, right=0; //number of observations with a '1' label on each side of the split
 			int total_left=0, total_right=0; //number observations total on each side of the split
 			for (int k=0; k<j; k++) if (get_tree_pos(m, parr[k].obs_number)==node){ //count how many observations are to the right, and how many of them have a '1' label
@@ -35,8 +37,11 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth){
 			if (gini_gain>best_gini_gain) { //could put other conditions here to ensure the split is good; e.g. minimum number of nodes on each side of the split, etc.
 				best_gini_gain=gini_gain;
 				sl.feature=i;
-				sl.bound = (get_data(m, parr[j].obs_number, i)
-					   +get_data(m, parr[j-1].obs_number, i)) /2;
+				sl.bound = (get_data(m, parr[j].obs_number, i)  //set the bound at the mean of the current observation and previous observation in this node
+					   +get_data(m, parr[last].obs_number, i)) /2; //previously this line used j-1 instead of last, which works but becomes less ideal as we
+										       //get further down from the root node.  It took the average of the current observation and 
+										       //the adjacent one in the root node; now it takes the average of the current observation
+										       //and the adjacent one in the current node.  
 			}
 		}
 	}
