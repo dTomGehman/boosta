@@ -42,9 +42,18 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth){
 				 //this value could be parameterized to adjust for overfitting
 	for (int i=0; i<get_num_feats(m); i++){ //for each feature
 		point*parr=get_sorted_col(s, i);//return the already sorted feature column to traverse
-		int last=0, this=0; //last keeps track of each previous value of j (observation) that is also contained in the same node.  It is used in the sl.bound calculation
+		double last=get_data(m, parr[0].obs_number, i), this; //as the possible split locations of a particular feature i are traversed, 
+								      //`last' represents the data at feature i of an observation that is on the left side of the prospective split
+								      //it starts as the lowest observation in the sorted data and trails after `this'
+								      //`this' is the data at feature i of observation j.  
+								      //if the data has no duplicates and we are splitting the root node, `this' is always located at j-1
+								      //however, we have to ignore values that are not in the same node as we move further down the tree
+								      //and we have to ignore values of `last' that are equal to `this'
+								      //the prospective split is located halfway between `last' and `this'
 		for (int j=1; j<get_num_obs(m); j++) if (get_tree_pos(m, parr[j].obs_number)==node) { //for each two adjacent observations in feature column (obs-1)
-			last=this; this=j;
+			this=get_data(m, parr[j].obs_number, i);
+			if (this==last) continue; //this line ensures that there is actually a change at the prospective split
+			last=this; 
 			int left=0, right=0; //number of observations with a '1' label on each side of the split
 			int total_left=0, total_right=0; //number observations total on each side of the split
 			for (int k=0; k<j; k++) if (get_tree_pos(m, parr[k].obs_number)==node){ //count how many observations are to the right, and how many of them have a '1' label
@@ -63,11 +72,7 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth){
 			if (gini_gain>best_gini_gain) { //could put other conditions here to ensure the split is good; e.g. minimum number of nodes on each side of the split, etc.
 				best_gini_gain=gini_gain;
 				sl.feature=i;
-				sl.bound = (get_data(m, parr[j].obs_number, i)  //set the bound at the mean of the current observation and previous observation in this node
-					   +get_data(m, parr[last].obs_number, i)) /2; //previously this line used j-1 instead of last, which works but becomes less ideal as we
-										       //get further down from the root node.  It took the average of the current observation and 
-										       //the adjacent one in the root node; now it takes the average of the current observation
-										       //and the adjacent one in the current node.  
+				sl.bound = (this+last)/2;
 			}
 		}
 	}
