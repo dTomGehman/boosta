@@ -17,4 +17,8 @@ void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth
 
 //Next up:  we make a tree ADT and a node structure with functions to grow the tree and make predictions from it.  
 
+Tree create_tree(Matrix m, SortedMatrix s);
+
+void print_tree(Tree t);
+
 #endif

@@ -1,5 +1,6 @@
 #include "simpleTreeADT.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 
 struct node{
@@ -26,6 +27,7 @@ struct tree_type {
 	//not sure if we need anything else in here or not
 };
 
+struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth);
 
 double gini(int numclass, int numtotal){ //gini calculation
 	return 1 - (
@@ -89,4 +91,63 @@ void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth
 		}
 	}
 }
+
+Tree create_tree(Matrix m, SortedMatrix s){
+	Tree t = malloc(sizeof(struct tree_type));
+	if (!t) {printf("fail."); exit(1);}
+
+	t->root = create_node(m, s, 0, 0);
+	return t;
+}
+
+struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth){
+	struct node*n = malloc(sizeof(struct node));
+	if (!n) {printf("fail."); exit(1);}
+
+	n->sl.feature=-2;//arbitrarily set this to -2 to avoid undefined behavior.  sl.feature will not equal -2 by the end; it will either be -1 or a valid feature number
+
+	//if this node is already at the max depth, it is forced to be a leaf
+	if (node_depth>=MAXDEPTH) n->sl.feature==-1;//-1 indicates this is a leaf node
+	
+	//*****this would be a good spot to put other conditions that prevent overfitting.  e.g., check the node size. for the simple tree, this doesn't matter
+	
+
+	n->depth = node_depth;
+	n->id = node;
+
+	if (n->sl.feature!=-1) n->sl = find_split(m, s, node, node_depth); //as long as this is not already marked as a leaf, find a split
+	if (n->sl.feature!=-1){//check sl.feature again (find_split can set it to -1 if the node is pure, for example.  
+		update_all_tree_pos(m, n->sl, node, node_depth);//mark the new split
+		//recursively find the child nodes
+		n->right = create_node(m, s, (((node>>(MAXDEPTH-node_depth-1)) )|1 )<<(MAXDEPTH-node_depth-1), node_depth+1);//bitwise tomfoolery
+		n->left = create_node(m, s, node, node_depth+1);
+	} else { n->right=n->left=NULL; } //if it's a leaf node, set its children to null
+	return n;
+}
+
+void print_bits(pos_t pos, int depth){ //print the bits of the id of a node.  Replace trailing zeros with *
+//	pos<<=1;//delete leading zero
+	for (int i=0; i<=MAXDEPTH; i++){
+		printf(i<=depth? (pos&(1l<<MAXDEPTH)?"1":"0") : "*"); //this is not efficient but for testing purposes whatever
+		pos<<=1;
+	}
+}
+void print_node(struct node*n){ //print out the details of a node recursively.  Leaves are the base case.  
+	if (n->sl.feature==-1) {
+		printf("leaf@depth %2d id ", n->depth);
+		print_bits(n->id, n->depth);
+		printf("\n");
+	} else {
+		printf("node@depth %2d id ", n->depth);
+		print_bits(n->id, n->depth);
+		printf(" sfeat %d sbound %lf\n", n->sl.feature, n->sl.bound);
+		print_node(n->left);
+		print_node(n->right);
+	}
+}
+void print_tree(Tree t){
+	print_node(t->root);
+}
+
+//there is no method to destroy the tree, much like the data/sorted matrices, because I expect the tree to persist until the end of the program.  
 

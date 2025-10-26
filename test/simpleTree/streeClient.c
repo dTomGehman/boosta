@@ -69,5 +69,12 @@ int main(int argc, char**argv){
 	//notice that if there is no gini gain (such as when all items in a node are already the same class), 
 	//no split is found, and all of the items are placed in the left node.  However, placing something in the
 	//left node doesn't really do anything.  So there
+	
+	//now it's time to actually make a tree.  
+	for (int i=0; i<get_num_obs(a); i++) set_tree_pos(a, i, 0); //clear treepos from previous testing
+	
+	Tree t = create_tree(a, s);
+	print_tree(t);//this doesn't really check that the tree is working well, just that it has the right structure
+
 	return 0;
 }
