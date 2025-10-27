@@ -1,7 +1,7 @@
 #include "simpleTreeADT.h"
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <math.h>
 
 struct node{
 	int depth; //the depth of this node.  root is 0
@@ -148,6 +148,28 @@ void print_node(struct node*n){ //print out the details of a node recursively.  
 void print_tree(Tree t){
 	print_node(t->root);
 }
+int predict(struct node*n, Matrix m, Matrix b, int obs){      //Matrix m is training and matrix b is testing
+	if (n->sl.feature==-1) {
+		int numObs=0;
+		int label=0;
+		for (int i=0; i<get_num_obs(m); i++) {
+			if (get_tree_pos(m, i)==n->id){
+				label+=get_label(m, i);
+				numObs++;
+			}
+		}
+		return (int)(round(label/numObs));             //Returns the majority label (0 or 1) for cases where the tree isn't fully expanded
+	} else {
+		if (get_data(b, obs, n->sl.feature) > n->sl.bound) {
+			predict(n->right, m, b, obs);
+		} else {
+			predict(n->left, m, b, obs);
+		}
+	}
 
+}
+int predictTree(Tree t, Matrix m, Matrix b, int obs){
+	return predict(t->root, m, b, obs);
+}
 //there is no method to destroy the tree, much like the data/sorted matrices, because I expect the tree to persist until the end of the program.  
 

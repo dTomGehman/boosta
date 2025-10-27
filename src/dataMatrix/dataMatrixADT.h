@@ -5,6 +5,7 @@
 #define MAXDEPTH 63
 
 typedef struct matrix_type *Matrix;
+typedef struct split_type *splitMatrix;
 
 Matrix create_from_file(char*filename);
 int get_num_obs(Matrix m); //get number of observations (rows)
@@ -13,6 +14,9 @@ char* get_name(Matrix m, int feature); //get the name of a feature.  I'm thinkin
 int get_label(Matrix m, int observation); //get the category of an observation (row).  This will be in a separate array from the main data.  
 double get_data(Matrix m, int observation, int feature); //get the data point at row, col
 void destroy(Matrix m); //might not be necessary, so we can hold off on this for now. 
+splitMatrix testTrainSplit(Matrix m, float splitPercentage, int seed);
+Matrix getTestMatrix(splitMatrix sm);
+Matrix getTrainMatrix(splitMatrix sm);
 
 typedef unsigned long pos_t;
 pos_t get_tree_pos(Matrix m, int observation); //get the treepos of an observation

@@ -4,13 +4,17 @@
 #include <stdio.h>
 
 int main(int argc, char**argv){
-	Matrix a;
+	Matrix firstA;
 
 	printf("Tests contained in simpleTreeADT:\n\n");
 
 	if (argc==2){
-		a = create_from_file(argv[1]);
+		firstA = create_from_file(argv[1]);
 	} else {printf("no file??\n"); return 1;}
+
+	splitMatrix sm = testTrainSplit(firstA, 0.8, 5);
+        Matrix testM = getTestMatrix(sm);
+        Matrix a = getTrainMatrix(sm);
 	SortedMatrix s = create_from_matrix(a);
 
 	printf("\nTests contained in streeClient.c\n\n");
@@ -75,6 +79,7 @@ int main(int argc, char**argv){
 	
 	Tree t = create_tree(a, s);
 	print_tree(t);//this doesn't really check that the tree is working well, just that it has the right structure
-
+	for (int i=0; i<get_num_obs(testM); i++) {
+	printf("Predicted label for observation %d: %d vs. Actual label: %d\n", i, predictTree(t, a, testM, i), get_label(testM, i));}
 	return 0;
 }

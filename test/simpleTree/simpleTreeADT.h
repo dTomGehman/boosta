@@ -21,4 +21,6 @@ Tree create_tree(Matrix m, SortedMatrix s);
 
 void print_tree(Tree t);
 
+int predictTree(Tree t, Matrix m, Matrix b, int obs);
+
 #endif

@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 #include "dataMatrixADT.h"
 
 
@@ -15,6 +16,10 @@ struct matrix_type {
   int*labels; //the labels/categories of each observation.  this is the first column of the input file
   double**data; //the rest of the data matrix (not including labels or names)
   long*tree_positions; //binary representing the nodes (location) of an observation in a tree
+};
+struct split_type {  //struct to hold test and training matrices after split
+	Matrix test;
+	Matrix train;
 };
 
 //create a matrix from data file.  I'm pretty sure we won't have to create a matrix otherwise.  
@@ -174,4 +179,58 @@ int is_same_node(int depth, pos_t treepos1, pos_t treepos2){
 	//if (!depth) return 1;
 	//return ( (treepos1>>(0)) == (treepos2>>(0)) ); 
 	return ( (treepos1>>(MAXDEPTH-depth)) == (treepos2>>(MAXDEPTH-depth)) ); 
+}
+splitMatrix testTrainSplit(Matrix m, float splitPercentage, int seed) {        //splitPercentage is percentage of training observations
+	int numTestObs = (int)(round((1-splitPercentage)*m->n_observations));
+
+	//Initializes the train/test matrices based on m; There's probably a more efficient way to do this
+	Matrix testingDat = malloc(sizeof(struct matrix_type));
+	Matrix trainingDat = malloc(sizeof(struct matrix_type));
+	splitMatrix splitData = malloc(sizeof(struct split_type));
+	if (!testingDat || !trainingDat || !splitData) {printf("fail."); exit(1);}
+	trainingDat->n_features=m->n_features;
+	testingDat->n_features=m->n_features;
+	trainingDat->n_observations=(m->n_observations-numTestObs);
+	testingDat->n_observations=numTestObs;
+	testingDat->names=m->names;
+        trainingDat->names=m->names;
+	testingDat->tree_positions=m->tree_positions;
+        trainingDat->tree_positions=m->tree_positions;
+	testingDat->labels = malloc(sizeof(int) * m->n_observations);
+	trainingDat->labels = malloc(sizeof(int) * m->n_observations);
+	testingDat->data = malloc(sizeof(double*) * m->n_observations);
+	trainingDat->data = malloc(sizeof(double*) * m->n_observations);
+
+	int tempObs[m->n_observations];
+	srand(seed);
+	for (int i=0; i<m->n_observations; i++) {tempObs[i]=i;}
+	//for (int i=0; i<m->n_observations;i++) {printf("%d-", tempObs[i]);}
+	//printf("\n");
+	for (int j=0; j<m->n_observations; j++) {                  //Randomly shuffles observation order; takes the first numTestObs as testing data
+		int cur = tempObs[j];
+		int newIndex = rand() % (m->n_observations);
+		tempObs[j] = tempObs[newIndex];
+		tempObs[newIndex] = cur;
+	}
+//	for (int i=0; i<m->n_observations;i++) {printf("%d-", tempObs[i]);}  //Can be uncommented to see the shuffled observation order; useful for testing
+//	printf("\n");                                                     //since original observation number will be changed in new matrix; I can change this if need be
+	for (int k=0; k<m->n_observations; k++) {
+		if (k<numTestObs) {
+			testingDat->labels[k] = m->labels[tempObs[k]];
+			testingDat->data[k] = malloc(sizeof(double) * (m->n_features));
+			testingDat->data[k]=m->data[tempObs[k]];
+		} else {
+			trainingDat->labels[k-numTestObs] = m->labels[tempObs[k]];
+			trainingDat->data[k-numTestObs] = malloc(sizeof(double) * (m->n_features));
+			trainingDat->data[k-numTestObs] = m->data[tempObs[k]];
+		}
+	}
+	splitData->test = testingDat;
+	splitData->train = trainingDat;
+}
+Matrix getTestMatrix(splitMatrix sm) {
+	return sm->test;
+}
+Matrix getTrainMatrix(splitMatrix sm) {
+	return sm->train;
 }
