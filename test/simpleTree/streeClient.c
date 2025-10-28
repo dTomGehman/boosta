@@ -2,17 +2,23 @@
 #include "../../src/sortedMatrix/sortedMatrixADT.h"
 #include "simpleTreeADT.h"
 #include <stdio.h>
+#include <stdlib.h>
 
 int main(int argc, char**argv){
 	Matrix firstA;
 
 	printf("Tests contained in simpleTreeADT:\n\n");
 
-	if (argc==2){
+	if (argc>=2){
 		firstA = create_from_file(argv[1]);
 	} else {printf("no file??\n"); return 1;}
+	
+	double train_size=0.8;
+	if (argc==3){
+		train_size=atof(argv[2]);
+	}
 
-	splitMatrix sm = testTrainSplit(firstA, 0.8, 5);
+	splitMatrix sm = testTrainSplit(firstA, train_size, 5);
         Matrix testM = getTestMatrix(sm);
         Matrix a = getTrainMatrix(sm);
 	SortedMatrix s = create_from_matrix(a);
@@ -79,7 +85,12 @@ int main(int argc, char**argv){
 	
 	Tree t = create_tree(a, s);
 	print_tree(t);//this doesn't really check that the tree is working well, just that it has the right structure
+	printf("\nTest observations:  \n");
 	for (int i=0; i<get_num_obs(testM); i++) {
 	printf("Predicted label for observation %d: %d vs. Actual label: %d\n", i, predictTree(t, a, testM, i), get_label(testM, i));}
+
+	printf("\nDouble check training observations\n");
+	for (int i=0; i<get_num_obs(a); i++) {
+	printf("Predicted label for training observation %d: %d vs. Actual label: %d\n", i, predictTree(t, a, a, i), get_label(a, i));}
 	return 0;
 }
