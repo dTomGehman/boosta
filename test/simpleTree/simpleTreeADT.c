@@ -55,7 +55,6 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth){
 		for (int j=1; j<get_num_obs(m); j++) if (get_tree_pos(m, parr[j].obs_number)==node) { //for each two adjacent observations in feature column (obs-1)
 			this=get_data(m, parr[j].obs_number, i);
 			if (this==last) continue; //this line ensures that there is actually a change at the prospective split
-			last=this; 
 			int left=0, right=0; //number of observations with a '1' label on each side of the split
 			int total_left=0, total_right=0; //number observations total on each side of the split
 			for (int k=0; k<j; k++) if (get_tree_pos(m, parr[k].obs_number)==node){ //count how many observations are to the right, and how many of them have a '1' label
@@ -76,6 +75,7 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth){
 				sl.feature=i;
 				sl.bound = (this+last)/2;
 			}
+			last=this; 
 		}
 	}
 
