@@ -19,6 +19,8 @@ void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth
 
 Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians);
 
+void fix_weights(Tree t, Matrix m, double*gradients, double*hessians);
+
 void print_tree(Tree t);
 
 int predictTree(Tree t, Matrix m, Matrix b, int obs);

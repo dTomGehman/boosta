@@ -34,13 +34,13 @@ int main(int argc, char**argv){
 
 	printf("\nTests contained in gradientClient.c\n\n");
 
-	for (int i=0; i<get_num_feats(a); i++){
-		point*parr = get_sorted_col(s, i);
-		printf("Feature %d: \n", i);
-		for (int j=0; j<get_num_obs(a); j++){
-			printf(" Obs %d Data %lf Label %d\n", parr[j].obs_number, parr[j].datum, get_label(a, parr[j].obs_number));
-		}
-	}
+	//for (int i=0; i<get_num_feats(a); i++){
+	//	point*parr = get_sorted_col(s, i);
+	//	printf("Feature %d: \n", i);
+	//	for (int j=0; j<get_num_obs(a); j++){
+	//		printf(" Obs %d Data %lf Label %d\n", parr[j].obs_number, parr[j].datum, get_label(a, parr[j].obs_number));
+	//	}
+	//}
 
 	split_location sl = find_split(a, s, 0l, 0, gradients, hessians); //last two arguments have to do with the node to split; 
 						     //that is not implemented yet, but we are just splitting at the topmost node rn
@@ -97,6 +97,7 @@ int main(int argc, char**argv){
 	for (int i=0; i<get_num_obs(a); i++) set_tree_pos(a, i, 0); //clear treepos from previous testing
 
 	Tree t = create_tree(a, s, gradients, hessians);
+	fix_weights(t, a, gradients, hessians);
 	print_tree(t);//this doesn't really check that the tree is working well, just that it has the right structure
 	
 	printf("\nTest observations:  \n");

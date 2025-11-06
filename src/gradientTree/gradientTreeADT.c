@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-
+#define LAMBDA 1
 struct node{
 	int depth; //the depth of this node.  root is 0
 	pos_t id; //the position of this node.  root is 0l
@@ -43,7 +43,6 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, 
 	}
 	if (ctlab==0 || ctlab==ct) return sl; //pure node.  don't split
 
-	double lambda=1;// hard coded to default value, parameterize later
 		
 	for (int i=0; i<get_num_feats(m); i++){ //for each feature
 		point*parr=get_sorted_col(s, i);//return the already sorted feature column to traverse
@@ -63,19 +62,20 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, 
 			double total_Gl = total_G-total_Gr, total_Hl = total_H-total_Hr;
 
 			next=this;
+			//for (int k=j+1; k<get_num_obs(m); k++) if (get_tree_pos(m, parr[k].obs_number)==node)
 			for (int k=j+1; k<get_num_obs(m); k++) if (get_tree_pos(m, parr[k].obs_number)==node)
 				if (this!= (next=get_data(m, parr[k].obs_number, i))) break;
 			if (this==next) continue;
 
-			double gain = (total_Gl * total_Gl) / (total_Hl + lambda)
-				    + (total_Gr * total_Gr) / (total_Hr + lambda)
-				    - (total_G  * total_G ) / (total_H  + lambda);
+			double gain = (total_Gl * total_Gl) / (total_Hl + LAMBDA)
+				    + (total_Gr * total_Gr) / (total_Hr + LAMBDA)
+				    - (total_G  * total_G ) / (total_H  + LAMBDA);
 
 			//printf("Feat %d, gain=%lf\n", i, gain);
 			//printf("  Gl=%lf Gr=%lf G=%lf\n", total_Gl, total_Gr, total_G);
 			//printf("  Hl=%lf Hr=%lf H=%lf\n\n", total_Hl, total_Hr, total_H);
 
-			if (gain>best_gain) { //could put other conditions here to ensure the split is good; e.g. minimum number of nodes on each side of the split, etc.
+			if (gain>best_gain) { //could put other conditions here to ensure the split is good; e.g. minimum number of observations on each side of the split, etc.
 				best_gain=gain;
 				sl.feature=i;
 				sl.bound = (this+next)/2;
@@ -126,6 +126,27 @@ struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, do
 	return n;
 }
 
+void calc_weight(struct node*n, Matrix m, double*gradients, double*hessians){      //Matrix m is training and matrix b is testing
+	if (n->sl.feature==-1) {
+		double tot_G=0, tot_H=0;
+		for (int i=0; i<get_num_obs(m); i++) {
+			if (get_tree_pos(m, i)==n->id){
+				tot_G+=gradients[i];
+				tot_H+=hessians[i];
+			}
+		}
+		//printf("%lf %lf\n", tot_G, tot_H);
+		n->sl.bound = -tot_G/(tot_H+LAMBDA); //sl.bound has no other use in a leaf node, so why not use it to store the weight value?  to save memory
+	} else {
+	calc_weight(n->right, m, gradients, hessians);
+		calc_weight(n->left, m, gradients, hessians);
+	}
+
+}
+void fix_weights(Tree t, Matrix m, double*gradients, double*hessians){
+	calc_weight(t->root, m, gradients, hessians);
+}
+
 void print_bits(pos_t pos, int depth){ //print the bits of the id of a node.  Replace trailing zeros with *
 //	pos<<=1;//delete leading zero
 	for (int i=0; i<=MAXDEPTH; i++){
@@ -137,11 +158,11 @@ void print_node(struct node*n){ //print out the details of a node recursively.  
 	if (n->sl.feature==-1) {
 		printf("leaf@depth %2d id ", n->depth);
 		print_bits(n->id, n->depth);
-		printf("\n");
+		printf("                            weight %lf\n", n->sl.bound);
 	} else {
 		printf("node@depth %2d id ", n->depth);
 		print_bits(n->id, n->depth);
-		printf(" sfeat %d sbound %lf\n", n->sl.feature, n->sl.bound);
+		printf(" sfeat %4d sbound %lf\n", n->sl.feature, n->sl.bound);
 		print_node(n->left);
 		print_node(n->right);
 	}
