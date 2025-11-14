@@ -171,17 +171,19 @@ void print_tree(Tree t){
 	print_node(t->root);
 }
 
-int predict(struct node*n, Matrix m, Matrix b, int obs){      //Matrix m is training and matrix b is testing
-	if (n->sl.feature==-1) {
-		int numObs=0;
-		int label=0;
-		for (int i=0; i<get_num_obs(m); i++) {
-			if (get_tree_pos(m, i)==n->id){
-				label+=get_label(m, i);
-				numObs++;
-			}
-		}
-		return (int)(round(label/numObs));             //Returns the majority label (0 or 1) for cases where the tree isn't fully expanded
+double predict(struct node*n, Matrix m, Matrix b, int obs){      //Matrix m is training and matrix b is testing
+      //return the weight at a leaf node
+	if (n->sl.feature==-1) { 
+		return n->sl.bound; //this is the weight that's stored in the leaf node
+		//int numObs=0;
+		//int label=0;
+		//for (int i=0; i<get_num_obs(m); i++) {
+		//	if (get_tree_pos(m, i)==n->id){
+		//		label+=get_label(m, i);
+		//		numObs++;
+		//	}
+		//}
+		//return (int)(round(label/numObs));             //Returns the majority label (0 or 1) for cases where the tree isn't fully expanded
 	} else {
 		if (get_data(b, obs, n->sl.feature) > n->sl.bound) {
 			predict(n->right, m, b, obs);
@@ -191,7 +193,7 @@ int predict(struct node*n, Matrix m, Matrix b, int obs){      //Matrix m is trai
 	}
 
 }
-int predictTree(Tree t, Matrix m, Matrix b, int obs){
+double  predictTree(Tree t, Matrix m, Matrix b, int obs){
 	return predict(t->root, m, b, obs);
 }
 //there is no method to destroy the tree, much like the data/sorted matrices, because I expect the tree to persist until the end of the program.  

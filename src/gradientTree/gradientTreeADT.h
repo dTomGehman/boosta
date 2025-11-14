@@ -23,6 +23,6 @@ void fix_weights(Tree t, Matrix m, double*gradients, double*hessians);
 
 void print_tree(Tree t);
 
-int predictTree(Tree t, Matrix m, Matrix b, int obs);
+double predictTree(Tree t, Matrix m, Matrix b, int obs);
 
 #endif

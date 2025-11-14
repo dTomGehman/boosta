@@ -102,10 +102,10 @@ int main(int argc, char**argv){
 	
 	printf("\nTest observations:  \n");
 	for (int i=0; i<get_num_obs(testM); i++) {
-	printf("Predicted label for observation %d: %d vs. Actual label: %d\n", i, predictTree(t, a, testM, i), get_label(testM, i));}
+	printf("Predicted weight for observation %lf: %d vs. Actual label: %d\n", i, predictTree(t, a, testM, i), get_label(testM, i));}
 
 	printf("\nDouble check training observations\n");
 	for (int i=0; i<get_num_obs(a); i++) {
-	printf("Predicted label for training observation %d: %d vs. Actual label: %d\n", i, predictTree(t, a, a, i), get_label(a, i));}
+	printf("Predicted weight for training observation %lf: %d vs. Actual label: %d\n", i, predictTree(t, a, a, i), get_label(a, i));}
 	return 0;
 }
