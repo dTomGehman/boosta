@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#define LAMBDA 1
 struct node{
 	int depth; //the depth of this node.  root is 0
 	pos_t id; //the position of this node.  root is 0l
@@ -27,10 +26,10 @@ struct tree_type {
 	//not sure if we need anything else in here or not
 };
 
-struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians);
+struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda);
 
 
-split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians){ //seems to work for first level split, but more testing needed, and I'll work on extending it to moar levels shortly.  
+split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda){ //seems to work for first level split, but more testing needed, and I'll work on extending it to moar levels shortly.  
 	split_location sl; //location of split: sl.feature (int) and sl.bound (double)
 	sl.feature=-1; //-1 indicates that a split has not been found.  This might be useful for a return value
 
@@ -67,9 +66,9 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, 
 				if (this!= (next=get_data(m, parr[k].obs_number, i))) break;
 			if (this==next) continue;
 
-			double gain = (total_Gl * total_Gl) / (total_Hl + LAMBDA)
-				    + (total_Gr * total_Gr) / (total_Hr + LAMBDA)
-				    - (total_G  * total_G ) / (total_H  + LAMBDA);
+			double gain = (total_Gl * total_Gl) / (total_Hl + lambda)
+				    + (total_Gr * total_Gr) / (total_Hr + lambda)
+				    - (total_G  * total_G ) / (total_H  + lambda);
 
 			//printf("Feat %d, gain=%lf\n", i, gain);
 			//printf("  Gl=%lf Gr=%lf G=%lf\n", total_Gl, total_Gr, total_G);
@@ -96,14 +95,14 @@ void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth
 	}
 }
 
-Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians){
+Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians, double lambda){
 	Tree t = malloc(sizeof(struct tree_type));
 	if (!t) {printf("fail."); exit(1);}
-	t->root = create_node(m, s, 0, 0, gradients, hessians);
+	t->root = create_node(m, s, 0, 0, gradients, hessians, lambda);
 	return t;
 }
 
-struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians){
+struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda){
 	struct node*n = malloc(sizeof(struct node));
 	if (!n) {printf("fail."); exit(1);}
 
@@ -121,17 +120,17 @@ struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, do
 	n->depth = node_depth;
 	//printf("d%d f%d \n", node_depth, n->sl.feature);
 	n->id = node;
-	if (n->sl.feature!=-1) n->sl = find_split(m, s, node, node_depth, gradients, hessians); //as long as this is not already marked as a leaf, find a split
+	if (n->sl.feature!=-1) n->sl = find_split(m, s, node, node_depth, gradients, hessians, lambda); //as long as this is not already marked as a leaf, find a split
 	if (n->sl.feature!=-1){//check sl.feature again (find_split can set it to -1 if the node is pure, for example.  
 		update_all_tree_pos(m, n->sl, node, node_depth);//mark the new split
 		//recursively find the child nodes
-		n->right = create_node(m, s, (((node>>(MAXDEPTH-node_depth-1)) )|1 )<<(MAXDEPTH-node_depth-1), node_depth+1, gradients, hessians);//bitwise tomfoolery
-		n->left = create_node(m, s, node, node_depth+1, gradients, hessians);
+		n->right = create_node(m, s, (((node>>(MAXDEPTH-node_depth-1)) )|1 )<<(MAXDEPTH-node_depth-1), node_depth+1, gradients, hessians, lambda);//bitwise tomfoolery
+		n->left = create_node(m, s, node, node_depth+1, gradients, hessians, lambda);
 	} else { n->right=n->left=NULL; } //if it's a leaf node, set its children to null
 	return n;
 }
 
-void calc_weight(struct node*n, Matrix m, double*gradients, double*hessians){      //Matrix m is training and matrix b is testing
+void calc_weight(struct node*n, Matrix m, double*gradients, double*hessians, double lambda){      //Matrix m is training and matrix b is testing
 	if (n->sl.feature==-1) {
 		double tot_G=0, tot_H=0;
 		for (int i=0; i<get_num_obs(m); i++) {
@@ -141,15 +140,15 @@ void calc_weight(struct node*n, Matrix m, double*gradients, double*hessians){   
 			}
 		}
 		//printf("%lf %lf\n", tot_G, tot_H);
-		n->sl.bound = -tot_G/(tot_H+LAMBDA); //sl.bound has no other use in a leaf node, so why not use it to store the weight value?  to save memory
+		n->sl.bound = -tot_G/(tot_H+lambda); //sl.bound has no other use in a leaf node, so why not use it to store the weight value?  to save memory
 	} else {
-	calc_weight(n->right, m, gradients, hessians);
-		calc_weight(n->left, m, gradients, hessians);
+	calc_weight(n->right, m, gradients, hessians, lambda);
+		calc_weight(n->left, m, gradients, hessians, lambda);
 	}
 
 }
-void fix_weights(Tree t, Matrix m, double*gradients, double*hessians){
-	calc_weight(t->root, m, gradients, hessians);
+void fix_weights(Tree t, Matrix m, double*gradients, double*hessians, double lambda){
+	calc_weight(t->root, m, gradients, hessians, lambda);
 }
 
 void print_bits(pos_t pos, int depth){ //print the bits of the id of a node.  Replace trailing zeros with *
@@ -179,6 +178,7 @@ void print_tree(Tree t){
 double predict(struct node*n, Matrix m, Matrix b, int obs){      //Matrix m is training and matrix b is testing
       //return the weight at a leaf node
 	if (n->sl.feature==-1) { 
+		//printf("%lf ", n->sl.bound);
 		return n->sl.bound; //this is the weight that's stored in the leaf node
 		//int numObs=0;
 		//int label=0;

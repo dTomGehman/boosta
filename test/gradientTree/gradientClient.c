@@ -5,15 +5,17 @@
 #include <stdlib.h>
 #include <math.h>
 
-int getGradient(double predicted, double actual){
-	return 2 * (predicted - actual);
+
+double getGradient(double predicted, double actual){
+	return (predicted - actual) * 2.0;
 }
-int getHessian(double predicted, double actual){
+double getHessian(double predicted, double actual){
 	return 2;
 }
 
 int main(int argc, char**argv){
 	Matrix firstA;
+	double lambda = 1;
 
 	printf("Tests contained in gradientTreeADT.c:\n\n");
 
@@ -33,7 +35,6 @@ int main(int argc, char**argv){
 
 	double*gradients = malloc(sizeof(double)*get_num_obs(a));
 	double*hessians = malloc(sizeof(double)*get_num_obs(a));
-	//use mse as loss function.  Find initial values for y^ = 0:  
 	
 	for (int i=0; i<get_num_obs(a); i++){
 		gradients[i] = getGradient(0, get_label(a, i)); // 2*(0-get_label(a, i));
@@ -50,7 +51,7 @@ int main(int argc, char**argv){
 	//	}
 	//}
 
-	split_location sl = find_split(a, s, 0l, 0, gradients, hessians); //last two arguments have to do with the node to split; 
+	split_location sl = find_split(a, s, 0l, 0, gradients, hessians, lambda); //last two arguments have to do with the node to split; 
 						     //that is not implemented yet, but we are just splitting at the topmost node rn
 	printf("\nSplit found at\nFeature:  %d\n", sl.feature);
 	printf("bound: %lf\n", sl.bound);
@@ -64,7 +65,7 @@ int main(int argc, char**argv){
 	printf("\n\n");
 
 	printf("Let's split the right side again.  \n");
-	sl=find_split(a, s, (1l<<(MAXDEPTH-1)), 1, gradients, hessians); 
+	sl=find_split(a, s, (1l<<(MAXDEPTH-1)), 1, gradients, hessians, lambda); 
 	
 	printf("\nSplit found at\nFeature:  %d\n", sl.feature);
 	printf("bound: %lf\n", sl.bound);
@@ -80,7 +81,7 @@ int main(int argc, char**argv){
 
 
 	printf("Now let's split the left side from before as well.  \n");
-	sl=find_split(a, s, (0), 1, gradients, hessians); 
+	sl=find_split(a, s, (0), 1, gradients, hessians, lambda); 
 	
 	printf("\nSplit found at\nFeature:  %d\n", sl.feature);
 	printf("bound: %lf\n", sl.bound);
@@ -103,8 +104,8 @@ int main(int argc, char**argv){
 
 	for (int i=0; i<get_num_obs(a); i++) set_tree_pos(a, i, 0); //clear treepos from previous testing
 
-	Tree t = create_tree(a, s, gradients, hessians);
-	fix_weights(t, a, gradients, hessians);
+	Tree t = create_tree(a, s, gradients, hessians, lambda);
+	fix_weights(t, a, gradients, hessians, lambda);
 	print_tree(t);//this doesn't really check that the tree is working well, just that it has the right structure
 	
 	printf("\nTest observations:  \n");
@@ -127,12 +128,18 @@ int main(int argc, char**argv){
 
 	for (int i=0; i<get_num_obs(a); i++) set_tree_pos(a, i, 0); //clear treepos from previous tree
 	for (int i=0; i<get_num_obs(a); i++){//recalculate gradients
-		gradients[i] = getGradient(firstTreeWeights[i], get_label(a, i)); 
+		double t = getGradient(firstTreeWeights[i], get_label(a, i)); 
+		//printf("%lf:", gradients[i] = t);//getGradient(firstTreeWeights[i], get_label(a, i))); 
+		//printf("%lf:", t);
+		//printf("%lf:", firstTreeWeights[i]);
+		//printf("%lf:", getGradient(firstTreeWeights[i], get_label(a, i))); 
+		//printf("%lf ", gradients[i]);
+		gradients[i] = getGradient(firstTreeWeights[i], get_label(a, i)); 	
 		hessians[i] = getHessian(firstTreeWeights[i], get_label(a, i)); 
 	}
 
-	Tree t2 = create_tree(a, s, gradients, hessians);
-	fix_weights(t, a, gradients, hessians);
+	Tree t2 = create_tree(a, s, gradients, hessians, lambda);
+	fix_weights(t2, a, gradients, hessians, lambda);
 	print_tree(t);//this doesn't really check that the tree is working well, just that it has the right structure
 	
 	printf("\nTest observations:  \n");
@@ -146,10 +153,12 @@ int main(int argc, char**argv){
 	double secondTreeWeights[get_num_obs(a)];
 	for (int i=0; i<get_num_obs(a); i++) {
 		secondTreeWeights[i] = predictTree(t2, a, a, i);
+		//printf("%lf:%lf", predictTree(t, a, a, i), predictTree(t2, a, a, i));
 		double totalweight = secondTreeWeights[i] + firstTreeWeights[i];
 		//printf("Predicted label, weight for training observation %d, %lf: %d vs. Actual label: %d\n", i, (int)round(totalweight), totalweight, get_label(a, i));
 		printf("Observation %d predicted label %d weight %lf vs. Actual label: %d\n", i, (int)round(totalweight), totalweight, get_label(a, i));
 	}
+	//for (int i=0; i<get_num_obs(a); i++) printf("%lf %lf", firstTreeWeights[i], secondTreeWeights[i]);
 
 
 	return 0;

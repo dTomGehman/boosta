@@ -11,15 +11,15 @@ typedef struct {
 	double bound; //value of split boundary:  all observations whose feature is greater than the boundary go to the right node (for example); the rest go to the left.  
 } split_location;
 
-split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians); //find the best split in the matrix at this node and return its location (struct containing which feature the split is on and the bound to split by)
+split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda); //find the best split in the matrix at this node and return its location (struct containing which feature the split is on and the bound to split by)
 
 void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth); //repeatedly update_tree_pos for each observation found in this node depending on the new split location sl
 
 //Next up:  we make a tree ADT and a node structure with functions to grow the tree and make predictions from it.  
 
-Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians);
+Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians, double lambda);
 
-void fix_weights(Tree t, Matrix m, double*gradients, double*hessians);
+void fix_weights(Tree t, Matrix m, double*gradients, double*hessians, double lambda);
 
 void print_tree(Tree t);
 
