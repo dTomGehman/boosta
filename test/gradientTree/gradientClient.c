@@ -3,6 +3,14 @@
 #include "../../src/gradientTree/gradientTreeADT.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
+
+int getGradient(double predicted, double actual){
+	return 2 * (predicted - actual);
+}
+int getHessian(double predicted, double actual){
+	return 2;
+}
 
 int main(int argc, char**argv){
 	Matrix firstA;
@@ -28,8 +36,8 @@ int main(int argc, char**argv){
 	//use mse as loss function.  Find initial values for y^ = 0:  
 	
 	for (int i=0; i<get_num_obs(a); i++){
-		gradients[i] = 2*(0-get_label(a, i));
-		hessians[i] = 2;
+		gradients[i] = getGradient(0, get_label(a, i)); // 2*(0-get_label(a, i));
+		hessians[i] = getHessian(0, get_label(a, i)); 
 	}
 
 	printf("\nTests contained in gradientClient.c\n\n");
@@ -89,11 +97,10 @@ int main(int argc, char**argv){
 	printf("\n\n");
 	
 
-	//notice that if there is no gini gain (such as when all items in a node are already the same class), 
-	//no split is found, and all of the items are placed in the left node.  However, placing something in the
-	//left node doesn't really do anything.  So there
 	
 	//now it's time to actually make a tree.  
+	printf("\n\nles do atree\n\n");
+
 	for (int i=0; i<get_num_obs(a); i++) set_tree_pos(a, i, 0); //clear treepos from previous testing
 
 	Tree t = create_tree(a, s, gradients, hessians);
@@ -104,8 +111,39 @@ int main(int argc, char**argv){
 	for (int i=0; i<get_num_obs(testM); i++) {
 	printf("Predicted weight for observation %lf: %d vs. Actual label: %d\n", i, predictTree(t, a, testM, i), get_label(testM, i));}
 
+
+
 	printf("\nDouble check training observations\n");
+	double firstTreeWeights[get_num_obs(a)];
 	for (int i=0; i<get_num_obs(a); i++) {
-	printf("Predicted weight for training observation %lf: %d vs. Actual label: %d\n", i, predictTree(t, a, a, i), get_label(a, i));}
+		firstTreeWeights[i] = predictTree(t, a, a, i);
+		printf("Predicted label, weight for training observation %d, %lf: %d vs. Actual label: %d\n", i, (int)round(firstTreeWeights[i]), firstTreeWeights[i], get_label(a, i));
+	}
+
+
+	printf("\n\nles do another tree\n\n");
+
+	for (int i=0; i<get_num_obs(a); i++) set_tree_pos(a, i, 0); //clear treepos from previous tree
+	for (int i=0; i<get_num_obs(a); i++){//recalculate gradients
+		gradients[i] = getGradient(firstTreeWeights[i], get_label(a, i)); 
+		hessians[i] = getHessian(firstTreeWeights[i], get_label(a, i)); 
+	}
+
+	Tree t2 = create_tree(a, s, gradients, hessians);
+	fix_weights(t, a, gradients, hessians);
+	print_tree(t);//this doesn't really check that the tree is working well, just that it has the right structure
+	
+	printf("\nTest observations:  \n");
+	for (int i=0; i<get_num_obs(testM); i++) {
+	printf("Predicted weight for observation %lf: %d vs. Actual label: %d\n", i, predictTree(t, a, testM, i)+predictTree(t2, a, testM, i), get_label(testM, i));}
+
+	printf("\nDouble check training observations\n");
+	double secondTreeWeights[get_num_obs(a)];
+	for (int i=0; i<get_num_obs(a); i++) {
+		secondTreeWeights[i] = predictTree(t2, a, a, i);
+		double totalweight = secondTreeWeights[i] + firstTreeWeights[i];
+		printf("Predicted label, weight for training observation %d, %lf: %d vs. Actual label: %d\n", i, (int)round(totalweight), totalweight, get_label(a, i));
+	}
+
 	return 0;
 }
