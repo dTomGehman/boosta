@@ -109,7 +109,9 @@ int main(int argc, char**argv){
 	
 	printf("\nTest observations:  \n");
 	for (int i=0; i<get_num_obs(testM); i++) {
-	printf("Predicted weight for observation %lf: %d vs. Actual label: %d\n", i, predictTree(t, a, testM, i), get_label(testM, i));}
+	//	printf("Predicted weight for observation %lf: %d vs. Actual label: %d\n", i, predictTree(t, a, testM, i), get_label(testM, i));}
+		printf("Observation %d predicted label %d weight %lf vs. Actual label: %d\n", i, (int)round(predictTree(t, a, testM, i)), predictTree(t, a, testM, i), get_label(testM, i));
+	}
 
 
 
@@ -117,7 +119,7 @@ int main(int argc, char**argv){
 	double firstTreeWeights[get_num_obs(a)];
 	for (int i=0; i<get_num_obs(a); i++) {
 		firstTreeWeights[i] = predictTree(t, a, a, i);
-		printf("Predicted label, weight for training observation %d, %lf: %d vs. Actual label: %d\n", i, (int)round(firstTreeWeights[i]), firstTreeWeights[i], get_label(a, i));
+		printf("Observation %d predicted label %d weight %lf vs. Actual label: %d\n", i, (int)round(firstTreeWeights[i]), firstTreeWeights[i], get_label(a, i));
 	}
 
 
@@ -135,15 +137,20 @@ int main(int argc, char**argv){
 	
 	printf("\nTest observations:  \n");
 	for (int i=0; i<get_num_obs(testM); i++) {
-	printf("Predicted weight for observation %lf: %d vs. Actual label: %d\n", i, predictTree(t, a, testM, i)+predictTree(t2, a, testM, i), get_label(testM, i));}
+		double totalweight = predictTree(t, a, testM, i)+predictTree(t2, a, testM, i);
+		//printf("Predicted weight for observation %lf: %d vs. Actual label: %d\n", i, , get_label(testM, i));}
+		printf("Observation %d predicted label %d weight %lf vs. Actual label: %d\n", i, (int)round(totalweight), totalweight, get_label(testM, i));
+	}
 
 	printf("\nDouble check training observations\n");
 	double secondTreeWeights[get_num_obs(a)];
 	for (int i=0; i<get_num_obs(a); i++) {
 		secondTreeWeights[i] = predictTree(t2, a, a, i);
 		double totalweight = secondTreeWeights[i] + firstTreeWeights[i];
-		printf("Predicted label, weight for training observation %d, %lf: %d vs. Actual label: %d\n", i, (int)round(totalweight), totalweight, get_label(a, i));
+		//printf("Predicted label, weight for training observation %d, %lf: %d vs. Actual label: %d\n", i, (int)round(totalweight), totalweight, get_label(a, i));
+		printf("Observation %d predicted label %d weight %lf vs. Actual label: %d\n", i, (int)round(totalweight), totalweight, get_label(a, i));
 	}
+
 
 	return 0;
 }

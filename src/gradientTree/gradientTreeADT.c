@@ -109,12 +109,17 @@ struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, do
 
 	n->sl.feature=-2;//arbitrarily set this to -2 to avoid undefined behavior.  sl.feature will not equal -2 by the end; it will either be -1 or a valid feature number
 	//if this node is already at the max depth, it is forced to be a leaf
-	if (node_depth>=MAXDEPTH) n->sl.feature==-1;//-1 indicates this is a leaf node
+	int max_depth_param = 6;
+	if (node_depth>=max_depth_param){
+		n->sl.feature=-1;//-1 indicates this is a leaf node
+		//printf("maxdepthreached");
+	}
 	
 	//*****this would be a good spot to put other conditions that prevent overfitting.  e.g., check the node size. for the simple tree, this doesn't matter
 	
 
 	n->depth = node_depth;
+	//printf("d%d f%d \n", node_depth, n->sl.feature);
 	n->id = node;
 	if (n->sl.feature!=-1) n->sl = find_split(m, s, node, node_depth, gradients, hessians); //as long as this is not already marked as a leaf, find a split
 	if (n->sl.feature!=-1){//check sl.feature again (find_split can set it to -1 if the node is pure, for example.  
