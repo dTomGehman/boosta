@@ -129,7 +129,7 @@ int main(int argc, char**argv){
 
 	for (int i=0; i<get_num_obs(a); i++) set_tree_pos(a, i, 0); //clear treepos from previous tree
 	for (int i=0; i<get_num_obs(a); i++){//recalculate gradients
-		double t = getGradient(firstTreeWeights[i], get_label(a, i)); 
+		//double t = getGradient(firstTreeWeights[i], get_label(a, i)); 
 		//printf("%lf:", gradients[i] = t);//getGradient(firstTreeWeights[i], get_label(a, i))); 
 		//printf("%lf:", t);
 		//printf("%lf:", firstTreeWeights[i]);
