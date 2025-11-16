@@ -16,6 +16,7 @@ double getHessian(double predicted, double actual){
 int main(int argc, char**argv){
 	Matrix firstA;
 	double lambda = 1;
+	int max_depth_param = 6;
 
 	printf("Tests contained in gradientTreeADT.c:\n\n");
 
@@ -104,7 +105,7 @@ int main(int argc, char**argv){
 
 	for (int i=0; i<get_num_obs(a); i++) set_tree_pos(a, i, 0); //clear treepos from previous testing
 
-	Tree t = create_tree(a, s, gradients, hessians, lambda);
+	Tree t = create_tree(a, s, gradients, hessians, lambda, max_depth_param);
 	fix_weights(t, a, gradients, hessians, lambda);
 	print_tree(t);//this doesn't really check that the tree is working well, just that it has the right structure
 	
@@ -138,7 +139,7 @@ int main(int argc, char**argv){
 		hessians[i] = getHessian(firstTreeWeights[i], get_label(a, i)); 
 	}
 
-	Tree t2 = create_tree(a, s, gradients, hessians, lambda);
+	Tree t2 = create_tree(a, s, gradients, hessians, lambda, max_depth_param);
 	fix_weights(t2, a, gradients, hessians, lambda);
 	print_tree(t2);//this doesn't really check that the tree is working well, just that it has the right structure
 	

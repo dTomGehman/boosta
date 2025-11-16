@@ -26,7 +26,7 @@ struct tree_type {
 	//not sure if we need anything else in here or not
 };
 
-struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda);
+struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda, int max_depth_param);
 
 
 split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda){ //seems to work for first level split, but more testing needed, and I'll work on extending it to moar levels shortly.  
@@ -95,20 +95,20 @@ void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth
 	}
 }
 
-Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians, double lambda){
+Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians, double lambda, int max_depth_param){
 	Tree t = malloc(sizeof(struct tree_type));
 	if (!t) {printf("fail."); exit(1);}
-	t->root = create_node(m, s, 0, 0, gradients, hessians, lambda);
+	t->root = create_node(m, s, 0, 0, gradients, hessians, lambda, max_depth_param);
 	return t;
 }
 
-struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda){
+struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda, int max_depth_param){
 	struct node*n = malloc(sizeof(struct node));
 	if (!n) {printf("fail."); exit(1);}
 
 	n->sl.feature=-2;//arbitrarily set this to -2 to avoid undefined behavior.  sl.feature will not equal -2 by the end; it will either be -1 or a valid feature number
 	//if this node is already at the max depth, it is forced to be a leaf
-	int max_depth_param = 6;
+	//int max_depth_param = 6;
 	if (node_depth>=max_depth_param){
 		n->sl.feature=-1;//-1 indicates this is a leaf node
 		//printf("maxdepthreached");
@@ -124,8 +124,8 @@ struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, do
 	if (n->sl.feature!=-1){//check sl.feature again (find_split can set it to -1 if the node is pure, for example.  
 		update_all_tree_pos(m, n->sl, node, node_depth);//mark the new split
 		//recursively find the child nodes
-		n->right = create_node(m, s, (((node>>(MAXDEPTH-node_depth-1)) )|1 )<<(MAXDEPTH-node_depth-1), node_depth+1, gradients, hessians, lambda);//bitwise tomfoolery
-		n->left = create_node(m, s, node, node_depth+1, gradients, hessians, lambda);
+		n->right = create_node(m, s, (((node>>(MAXDEPTH-node_depth-1)) )|1 )<<(MAXDEPTH-node_depth-1), node_depth+1, gradients, hessians, lambda, max_depth_param);//bitwise tomfoolery
+		n->left = create_node(m, s, node, node_depth+1, gradients, hessians, lambda, max_depth_param);
 	} else { n->right=n->left=NULL; } //if it's a leaf node, set its children to null
 	return n;
 }
