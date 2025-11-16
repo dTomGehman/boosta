@@ -140,7 +140,7 @@ int main(int argc, char**argv){
 
 	Tree t2 = create_tree(a, s, gradients, hessians, lambda);
 	fix_weights(t2, a, gradients, hessians, lambda);
-	print_tree(t);//this doesn't really check that the tree is working well, just that it has the right structure
+	print_tree(t2);//this doesn't really check that the tree is working well, just that it has the right structure
 	
 	printf("\nTest observations:  \n");
 	for (int i=0; i<get_num_obs(testM); i++) {
