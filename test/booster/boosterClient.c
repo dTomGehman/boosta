@@ -35,7 +35,32 @@ int main(int argc, char**argv){
 	my_parameters.gamma=1;
 
 	Booster b = create_booster(trainM, my_parameters);
-	printf("hH\n");
 	train_booster(b);
-
+	
+	printf("Check the training observations\n");
+	int total_correct=0;
+	int pred, actual;
+	for (int i=0; i<get_num_obs(trainM); i++){
+		printf("Train obs %d.  Weight %lf Pred label %d True label %d\n", 
+			i,
+			get_predicted_weight(b, trainM, i),
+			pred=get_predicted_label(b, trainM, i),
+			actual=get_label(trainM, i)
+		      );
+		if (pred==actual) total_correct++;
+	}
+	printf("\nTrain Accuracy:  %d/%d = %lf\n", total_correct, get_num_obs(trainM), (double)total_correct/get_num_obs(trainM));
+	
+	printf("\n\nCheck the testing observations\n");
+	total_correct=0;
+	for (int i=0; i<get_num_obs(testM); i++){
+		printf("Test obs %d.  Weight %lf Pred label %d True label %d\n", 
+			i,
+			get_predicted_weight(b, testM, i),
+			pred=get_predicted_label(b, testM, i),
+			actual=get_label(testM, i)
+		      );
+		if (pred==actual) total_correct++;
+	}
+	printf("\nTest Accuracy:  %d/%d = %lf\n", total_correct, get_num_obs(testM), (double)total_correct/get_num_obs(testM));
 }

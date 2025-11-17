@@ -45,8 +45,8 @@ void train_booster(Booster b){
 		//get the gradients, hessians based on loss of current predictions
 		for (int j=0; j<get_num_obs(b->m); j++){
 			set_tree_pos(b->m, j, 0); //also clear treeposes
-			gradients[j] = sqGradient(predictions[0], get_label(b->m, j));
-			hessians[j] = sqHessian(predictions[0], get_label(b->m, j));
+			gradients[j] = sqGradient(predictions[j], get_label(b->m, j));
+			hessians[j] = sqHessian(predictions[j], get_label(b->m, j));
 		}
 		//train a tree based on the gradients and hessians
 		b->learners[i] = create_tree(b->m, b->sm, gradients, hessians, b->params.lambda, b->params.max_depth_param);
@@ -55,10 +55,21 @@ void train_booster(Booster b){
 
 		//add the results (predictions or weights) of this tree to the predictiions
 		for (int j=0; j<get_num_obs(b->m); j++){
-			predictions[j]+=predictTree(b->learners[i], b->m, b->m, i);
+			predictions[j]+=predictTree(b->learners[i], b->m, b->m, j);
 			//reminder for later:  can remove one parameter from predictTree now
 		}
+		printf("Tree %d done\n", i);
 	}
+}
+
+double get_predicted_weight(Booster b, Matrix testM, int obs){
+	double output=0;
+	for (int i=0; i<b->params.max_learners; i++) output += predictTree(b->learners[i], b->m, testM, obs);
+	return output;
+}
+
+int get_predicted_label(Booster b, Matrix testM, int obs){
+	return get_predicted_weight(b, testM, obs)<0.5?0:1;
 }
 
 //loss calculations.  Right now, we're just doing squared loss, but we can add more easily
