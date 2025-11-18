@@ -31,7 +31,6 @@ struct sorted_type{
 void sortnshove(point*array, Matrix m, int feature);
 
 SortedMatrix create_from_matrix(Matrix m){
-//	clock_t startTime = clock();
 	struct timespec startTime, endTime;
 	clock_gettime(CLOCK_MONOTONIC, &startTime);
 	SortedMatrix sm = malloc(sizeof(struct sorted_type));
@@ -53,8 +52,6 @@ SortedMatrix create_from_matrix(Matrix m){
 		int startCol = arr.start;
 		int endCol = arr.end;
 		for (int i=startCol; i<endCol; i++){
-                	//sm->matrix[i] = malloc(sizeof(point) * get_num_obs(m));
-                	//if (!sm->matrix[i]) {printf("fail. "); exit(1);}
                 	sortnshove(sm->matrix[i], m, i);
 		}
         }
@@ -81,35 +78,22 @@ SortedMatrix create_from_matrix(Matrix m){
 		pthread_join(p2, NULL);
 		pthread_join(p3, NULL);
 	} else {                                        //Doesn't use threads if less than three features
-		for (int i=0; i<get_num_feats(m); i++){       //this for loop could be threaded I think
-			//sm->matrix[i] = malloc(sizeof(point) * get_num_obs(m));
-			//if (!sm->matrix[i]) {printf("fail. "); exit(1);}
+		for (int i=0; i<get_num_feats(m); i++){       
 			sortnshove(sm->matrix[i], m, i);
 		}
 	}
-//	clock_t endTime = clock();
 	clock_gettime(CLOCK_MONOTONIC, &endTime);
 
-	//quick test, to be removed later and placed in the client
-	//holy cow it works first try let's go
-	/*
-	for (int i=0; i<get_num_feats(m); i++){
-		printf("Feature %d: \n", i);
-		for (int j=0; j<get_num_obs(m); j++){
-			printf(" Obs %d Data %lf\n", sm->matrix[i][j].obs_number, sm->matrix[i][j].datum);
-		}
-	}*/
 
-//	printf("Time to create sorted Matrix: %f\n", (double)(endTime-startTime)/CLOCKS_PER_SEC);  //To compare threaded time with regular time
 	double totalTime = (endTime.tv_sec-startTime.tv_sec)+((endTime.tv_nsec-startTime.tv_nsec)/1000000000.0);
 	printf("Time to create sorted Matrix %f\n", totalTime);
 
 	return sm;
 }
 
-//sort and shove it i guess
+//sort a certain feature column of Matrix m and place it in the array
 void sortnshove(point*array, Matrix m, int feature){ //this might be inefficient due to copying, so maybe I'll improve it, or maybe I won't.  
-	PQ q = create();
+	PQ q = create(); //use a priority queue to quickly sort the columns
 	for (int i=0; i<get_num_obs(m); i++){
 		point*p = malloc(sizeof(point));
 		if (!p) {printf("fail. "); exit(1);}
@@ -128,6 +112,7 @@ void sortnshove(point*array, Matrix m, int feature){ //this might be inefficient
 		
 }
 
-point*get_sorted_col(SortedMatrix s, int feature){ //maybe add if statement to ensure that feature argument is valid
+//return an address to a sorted matrix column
+point*get_sorted_col(SortedMatrix s, int feature){
 	return s->matrix[feature];
 }

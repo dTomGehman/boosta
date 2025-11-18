@@ -11,18 +11,21 @@ typedef struct {
 	double bound; //value of split boundary:  all observations whose feature is greater than the boundary go to the right node (for example); the rest go to the left.  
 } split_location;
 
-split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda); //find the best split in the matrix at this node and return its location (struct containing which feature the split is on and the bound to split by)
+//find the best split in the matrix at this node and return its location (struct containing which feature the split is on and the bound to split by)
+split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda); 
 
-void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth); //repeatedly update_tree_pos for each observation found in this node depending on the new split location sl
+//repeatedly update_tree_pos for each observation found in this node depending on the new split location sl
+void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth); 
 
-//Next up:  we make a tree ADT and a node structure with functions to grow the tree and make predictions from it.  
-
+//create a tree trained on a dataMatrix, its respective sortedMatrix, and the gradients and hessians of each observation
 Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians, double lambda, int max_depth_param);
 
+//calculate the weight at each leaf node in the tree
 void fix_weights(Tree t, Matrix m, double*gradients, double*hessians, double lambda);
 
-void print_tree(Tree t);
+void print_tree(Tree t); //print out the tree structure with its split boundaries and leaf weights
 
-double predictTree(Tree t, Matrix m, Matrix b, int obs);
+//Make a prediction:  use the tree to place the observation in a leaf node, and return the leaf's weight
+double predictTree(Tree t, Matrix m, Matrix b, int obs); //Matrix m is the training matrix; Matrix b is the testing matrix.  
 
 #endif

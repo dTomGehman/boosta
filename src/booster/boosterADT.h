@@ -5,20 +5,20 @@
 
 typedef struct booster_type *Booster;
 
-typedef struct {
-	int max_depth_param;
-	double lambda;
+typedef struct { //struct to hold parameters
+	int max_depth_param; //max depth of a tree
+	double lambda; //lambda param
 	
-	int max_learners;
-	double gamma;
+	int max_learners; //number of trees to generate
+	double gamma;  //not implemented yet
 } param_t;
 
-Booster create_booster(Matrix m, param_t params);
+Booster create_booster(Matrix m, param_t params);//Create a booster from a training matrix and parameter struct
 
-void train_booster(Booster b);
+void train_booster(Booster b); //train the model
 
-double get_predicted_weight(Booster b, Matrix testM, int obs);
+double get_predicted_weight(Booster b, Matrix testM, int obs); //get a predicted weight for a test observation
 
-int get_predicted_label(Booster b, Matrix testM, int obs);
+int get_predicted_label(Booster b, Matrix testM, int obs); //get a predicted label for a test observation (same as rounding get_predicted_weight to 0 or 1)
 
 #endif

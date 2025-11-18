@@ -107,20 +107,15 @@ char* get_name(Matrix m, int feature){
 		printf("Invalid feature number\n");
 		exit(1);
     }
-    //if (feature==-1){
-    //   return m->names[0];
-    //}
     return m->names[feature+1];
 }
 
 int get_label(Matrix m, int observation) {
 	return m->labels[observation];
-
 }
 
 double get_data(Matrix m, int observation, int feature) {
 	return m->data[observation][feature];
-
 }
 
 //This sets the treepos of an observation
