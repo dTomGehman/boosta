@@ -62,7 +62,7 @@ void train_booster(Booster b){
 		}
 
 		//train a tree based on the gradients and hessians
-		b->learners[i] = create_tree(b->m, b->sm, gradients, hessians, b->params.lambda, b->params.max_depth_param);
+		b->learners[i] = create_tree(b->m, b->sm, gradients, hessians, b->params.lambda, b->params.max_depth_param, b->params.gamma);
 		//fix weights on the tree.  This function could be combined with the previous
 		fix_weights(b->learners[i], b->m, gradients, hessians, b->params.lambda);
 		//We can remove this and separate it to speed things up a little
