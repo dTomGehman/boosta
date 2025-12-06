@@ -10,7 +10,8 @@ typedef struct { //struct to hold parameters
 	double lambda; //lambda param
 	
 	int max_learners; //number of trees to generate
-	double gamma;  //not implemented yet
+	double gamma; 
+       	double eta;	
 } param_t;
 
 Booster create_booster(Matrix m, param_t params);//Create a booster from a training matrix and parameter struct

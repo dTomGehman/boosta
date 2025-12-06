@@ -34,7 +34,8 @@ int main(int argc, char**argv){
 	my_parameters.max_depth_param=6; //maximum depth of a tree
 	my_parameters.lambda=1;
 	my_parameters.max_learners=5;    //number of learners to generate
-	my_parameters.gamma=1;		 //this one has not been implemented yet
+	my_parameters.gamma=1;
+	my_parameters.eta=.5;
 
 	Booster b = create_booster(trainM, my_parameters); //load the booster
 	clock_gettime(CLOCK_MONOTONIC, &startT);

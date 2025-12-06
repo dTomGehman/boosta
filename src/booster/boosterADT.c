@@ -69,8 +69,10 @@ void train_booster(Booster b){
 		print_tree(b->learners[i]);
 
 		//add the results (predictions or weights) of this tree to the predictions
+		double scale = 1;
 		for (int j=0; j<get_num_obs(b->m); j++){
-			predictions[j]+=predictTree(b->learners[i], b->m, b->m, j);
+			predictions[j]+= scale * predictTree(b->learners[i], b->m, b->m, j);
+			scale *= b->params.eta;
 			//reminder for later:  can remove one parameter from predictTree now
 		}
 	}
@@ -79,7 +81,11 @@ void train_booster(Booster b){
 //For this observation, sum the prediction (leaf weight) from each tree.  
 double get_predicted_weight(Booster b, Matrix testM, int obs){
 	double output=0;
-	for (int i=0; i<b->params.max_learners; i++) output += predictTree(b->learners[i], b->m, testM, obs);
+	double scale = 1;
+	for (int i=0; i<b->params.max_learners; i++){
+	       output += scale * predictTree(b->learners[i], b->m, testM, obs);
+	       scale *= b->params.eta;
+	}
 	return output;
 }
 
