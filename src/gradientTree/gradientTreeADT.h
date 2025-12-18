@@ -3,6 +3,7 @@
 
 #include "../../src/dataMatrix/dataMatrixADT.h"
 #include "../../src/sortedMatrix/sortedMatrixADT.h"
+#include "../../src/booster/boosterADT.h"
 
 typedef struct tree_type *Tree;
 
@@ -12,16 +13,16 @@ typedef struct {
 } split_location;
 
 //find the best split in the matrix at this node and return its location (struct containing which feature the split is on and the bound to split by)
-split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda, double gamma); 
+split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, param_t*params); 
 
 //repeatedly update_tree_pos for each observation found in this node depending on the new split location sl
 void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth); 
 
 //create a tree trained on a dataMatrix, its respective sortedMatrix, and the gradients and hessians of each observation
-Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians, double lambda, int max_depth_param, double gamma);
+Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians, param_t*params);
 
 //calculate the weight at each leaf node in the tree
-void fix_weights(Tree t, Matrix m, double*gradients, double*hessians, double lambda);
+void fix_weights(Tree t, Matrix m, double*gradients, double*hessians, param_t*params);
 
 void print_tree(Tree t); //print out the tree structure with its split boundaries and leaf weights
 

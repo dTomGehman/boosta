@@ -1,4 +1,5 @@
 #include "gradientTreeADT.h"
+#include "../booster/boosterADT.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -26,17 +27,17 @@ struct tree_type {
 	//not sure if we need anything else in here or not
 };
 
-struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda, int max_depth_param, double gamma);
+struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, param_t*params);
 
 
-split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda, double gamma){ 
+split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, param_t*params){ 
 	//the split_location sl indicates whether a split has been found or not and where that split is.  
 	//if a split is not found, sl.feature is kept as -1 by this function.  The tree will later mark sl.bound with the weight value.  
 	//if a split is found, sl.feature is a nonnegative integer representing the feature where the split is found, and sl.bound represents the border of that split
 	split_location sl; 
 	sl.feature=-1;
 
-	double best_gain=gamma; //the best gain found across all possible splits.  minimum is gamma
+	double best_gain=params->gamma; //the best gain found across all possible splits.  minimum is gamma
 	double total_G=0, total_H=0; //total Gradient and total Hessian 
 	int ct=0, ctlab=0; //count of observations in the node, count of how many of those have label '1'.  to test for purity
 	
@@ -69,9 +70,9 @@ split_location find_split(Matrix m, SortedMatrix s, pos_t node, int node_depth, 
 				if (this!= (next=get_data(m, parr[k].obs_number, i))) break;
 			if (this==next) continue;
 
-			double gain = (total_Gl * total_Gl) / (total_Hl + lambda)
-				    + (total_Gr * total_Gr) / (total_Hr + lambda)
-				    - (total_G  * total_G ) / (total_H  + lambda);
+			double gain = (total_Gl * total_Gl) / (total_Hl + params->lambda)
+				    + (total_Gr * total_Gr) / (total_Hr + params->lambda)
+				    - (total_G  * total_G ) / (total_H  + params->lambda);
 
 			if (gain>best_gain) { //could put other conditions here to ensure the split is good; e.g. minimum number of observations on each side of the split, etc.
 				best_gain=gain;
@@ -93,22 +94,22 @@ void update_all_tree_pos(Matrix m, split_location sl, pos_t node, int node_depth
 	}
 }
 
-Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians, double lambda, int max_depth_param, double gamma){
+Tree create_tree(Matrix m, SortedMatrix s, double*gradients, double*hessians, param_t*params){
 	Tree t = malloc(sizeof(struct tree_type));
 	if (!t) {printf("fail."); exit(1);}
 	
 	//create_node starts at the root node and works down until every path is terminated by a leaf
-	t->root = create_node(m, s, 0, 0, gradients, hessians, lambda, max_depth_param, gamma);
+	t->root = create_node(m, s, 0, 0, gradients, hessians, params);
 	return t;
 }
 
-struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, double lambda, int max_depth_param, double gamma){
+struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, double*gradients, double*hessians, param_t*params){
 	struct node*n = malloc(sizeof(struct node));
 	if (!n) {printf("fail."); exit(1);}
 
 	n->sl.feature=-2;//arbitrarily set this to -2 to avoid undefined behavior.  sl.feature will not equal -2 by the end; it will either be -1 or a valid (nonnegative) feature number
 	
-	if (node_depth>=max_depth_param){//if this node is already at the max depth, it is forced to be a leaf
+	if (node_depth>=params->max_depth_param){//if this node is already at the max depth, it is forced to be a leaf
 		n->sl.feature=-1;//-1 indicates this is a leaf node
 	}
 	
@@ -118,14 +119,14 @@ struct node*create_node(Matrix m, SortedMatrix s, pos_t node, int node_depth, do
 	n->depth = node_depth;
 	n->id = node;
 
-	if (n->sl.feature!=-1) n->sl = find_split(m, s, node, node_depth, gradients, hessians, lambda, gamma); //as long as this is not already marked as a leaf, find a split
+	if (n->sl.feature!=-1) n->sl = find_split(m, s, node, node_depth, gradients, hessians, params); //as long as this is not already marked as a leaf, find a split
 
 	if (n->sl.feature!=-1){//check sl.feature again (find_split can set it to -1 if the node is pure, for example.)
 		update_all_tree_pos(m, n->sl, node, node_depth);//mark the new split
 
 		//recursively find the child nodes
-		n->right = create_node(m, s, (((node>>(MAXDEPTH-node_depth-1)) )|1 )<<(MAXDEPTH-node_depth-1), node_depth+1, gradients, hessians, lambda, max_depth_param, gamma);
-		n->left = create_node(m, s, node, node_depth+1, gradients, hessians, lambda, max_depth_param, gamma);
+		n->right = create_node(m, s, (((node>>(MAXDEPTH-node_depth-1)) )|1 )<<(MAXDEPTH-node_depth-1), node_depth+1, gradients, hessians, params);
+		n->left = create_node(m, s, node, node_depth+1, gradients, hessians, params);
 
 	} else { n->right=n->left=NULL; } //if it's a leaf node, set its children to null
 	return n;
@@ -150,8 +151,8 @@ void calc_weight(struct node*n, Matrix m, double*gradients, double*hessians, dou
 	}
 
 }
-void fix_weights(Tree t, Matrix m, double*gradients, double*hessians, double lambda){
-	calc_weight(t->root, m, gradients, hessians, lambda);
+void fix_weights(Tree t, Matrix m, double*gradients, double*hessians, param_t*params){
+	calc_weight(t->root, m, gradients, hessians, params->lambda);
 }
 
 void print_bits(pos_t pos, int depth){ //print the bits of the id of a node.  Replace trailing zeros with *
