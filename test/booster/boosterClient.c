@@ -30,9 +30,9 @@ int main(int argc, char**argv){
         Matrix trainM = getTrainMatrix(sm);
 
 	//This struct defines the parameters to pass to the booster.  More to be added soon.
-	param_t my_parameters;
-	my_parameters.max_depth_param=6; //maximum depth of a tree
-	my_parameters.lambda=1;
+	param_t my_parameters = create_default_params();
+	//my_parameters.max_depth_param=6; //maximum depth of a tree
+	//my_parameters.lambda=1;
 	my_parameters.max_learners=5;    //number of learners to generate
 	my_parameters.gamma=1;
 	my_parameters.eta=.5;

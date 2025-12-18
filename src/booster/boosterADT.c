@@ -102,4 +102,12 @@ double sqHessian(double predicted, double actual){
 	return 2;
 }
 
-
+param_t create_default_params(){
+	param_t output;
+	output.max_depth_param=6;
+	output.lambda=1;
+	output.max_learners=10;
+	output.gamma=0;
+	output.eta=.3;
+	return output;
+}

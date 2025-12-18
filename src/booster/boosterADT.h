@@ -14,6 +14,8 @@ typedef struct { //struct to hold parameters
        	double eta;	
 } param_t;
 
+param_t create_default_params();
+
 Booster create_booster(Matrix m, param_t params);//Create a booster from a training matrix and parameter struct
 
 void train_booster(Booster b); //train the model
