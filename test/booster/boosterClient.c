@@ -2,6 +2,7 @@
 #include "../../src/sortedMatrix/sortedMatrixADT.h"
 #include "../../src/gradientTree/gradientTreeADT.h"
 #include "../../src/booster/boosterADT.h"
+#include "../../src/metrics/metrics.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -64,12 +65,18 @@ int main(int argc, char**argv){
 	int tp = 0;
 	int fn = 0;
 	int fp = 0;
+    double*predweights = malloc(sizeof(double)*get_num_obs(testM));
+    int*actuallabels = malloc(sizeof(int)*get_num_obs(testM));
+    if (!(predweights&&actuallabels)){
+        printf("fail\n");
+        exit(1);
+    }
 	for (int i=0; i<get_num_obs(testM); i++){
 		printf("Test obs %d.  Weight %lf Pred label %d True label %d\n", 
 			i,
-			get_predicted_weight(b, testM, i),
+			predweights[i]=get_predicted_weight(b, testM, i),
 			pred=get_predicted_label(b, testM, i),
-			actual=get_label(testM, i)
+			actuallabels[i]=actual=get_label(testM, i)
 		      );
 		if (pred==actual) {
 			total_correct++;
@@ -83,6 +90,8 @@ int main(int argc, char**argv){
 	printf("\nTest Accuracy:  %d/%d = %lf\n", total_correct, get_num_obs(testM), (double)total_correct/get_num_obs(testM));
 	printf("\nTest Sensitivity: %d/(%d+%d) = %lf\n", tp, tp, fn, (double)tp/(tp+fn));
 	printf("\nTest Specificity: %d/(%d+%d) = %lf\n", tn, tn, fp, (double)tn/(tn+fp));
+    printf("\nROC AUC: %lf\n", ROC_AUC(actuallabels, predweights, get_num_obs(testM), 100));
+    
 
 	double totalTime = (endT.tv_sec-startT.tv_sec)+((endT.tv_nsec-startT.tv_nsec)/1000000000.0);
         printf("Training Time: %f\n", totalTime);
